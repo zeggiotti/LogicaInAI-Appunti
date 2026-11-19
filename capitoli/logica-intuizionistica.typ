@@ -353,3 +353,76 @@ Nel caso della logica proposizionale, inoltre, vale un risultato ancora più sem
 ]
 
 La dimostrazione segue dal lemma sulle formule negative, e dal Teorema di _Traduzione di Gödel_. Infatti, se $scripts(tack)_c phi$, allora, per il Teorema di _Traduzione di Gödel_, vale che $scripts(tack)_i g(phi)$, e nel caso proposizionale si verifica, per induzione su $phi$ e grazie ai teoremi sulle doppie negazioni dimostrati nella sezione dedicata alla deduzione naturale intuizionistica, che $g(phi)$ è intuizionisticamente equivalente a $not not phi$. Viceversa, se $scripts(tack)_i not not phi$, allora $scripts(tack)_c not not phi$, e quindi $scripts(tack)_c phi$. Ad esempio, siccome $scripts(tack)_c p or not p$, per il _Teorema di Glivenko_ vale che $scripts(tack)_i not not (p or not p)$, come è già stato dimostrato nella sezione dedicata alla deduzione naturale intuizionistica. Si noti che il teorema vale soltanto per la logica proposizionale in quanto, per la logica del primo ordine, il punto ($v i$) del teorema sulle negazioni vale in una sola direzione, ossia $not not forall x. phi -> forall x. not not phi$ ma non il viceversa, e la doppia negazione non può quindi essere spostata all'esterno della formula.
+
+== _Oltre l'Intuizionismo: la Logica Minimale_
+
+Concludiamo il presente capitolo con un confronto tra le tre logiche incontrate fino ad ora, che si pone l'obiettivo di chiarire il ruolo delle regole che gestiscono il falso, o la contraddizione. Consideriamo l'insieme delle regole introdotte per la deduzione naturale della logica proposizionale, o della logica dei predicati, e scartiamo le regole che coinvolgono il falso $bot$. Il sistema che otteniamo prende il nome di _logica minimale_ (#pb[Ml]), introdotta da Ingebrigt Johansson nel 1937, e può essere definita come:
+$
+  #pb[Ml] = #pb[Il] without {#pb[Ex Falso]}
+$
+In logica minimale, dunque, non esiste alcuna regola speciale per la contraddizione $bot$, e per la negazione $not$. Il falso, quindi, $bot$ è trattato esattamente come un qualunque altro simbolo proposizionale, al pari dei simboli ${a,b,dots,p,q,dots}$, e la negazione rimane definita come $not phi := phi -> bot$. In altre parole, in logica minimale l'assurdo non ha alcun potere deduttivo e, di conseguenza, dal falso non si può derivare nulla. I due principi che, aggiunti alla logica minimale, caratterizzano le regole sul falso sono i seguenti:
++ #pb[Ef] $:= bot -> A$, ovvero _ex falso quodlibet sequitur_
++ #pb[Raa]/#pb[Dna] $:= not not A -> A$, ovvero _reductio ad absurdum_, o _duplex negatio affirmat_
+
+Aggiungendoli come ipotesi alla logica minimale, o come regole di derivazione del sistema deduttivo associato, si ottengono, rispettivamente, la logica intuizionistica e la logica classica. Formalmente, indicando con #pb[Ef] e #pb[Raa] l'insieme di tutte le istanze dei rispettivi schemi, vale che
+$
+  Gamma scripts(tack)_c B <==> Gamma union #pb[Raa] scripts(tack)_m B #h(4em) Gamma scripts(tack)_i B <==> Gamma union #pb[Efq] scripts(tack)_m B
+$
+
+Si noti che, per ottenere il sistema logico classico, è sufficiente introdurre il principio di riduzione ad assurdo, poiché è possibile dimostrare che da esso si può derivare il principio _ex falso_ come teorema della logica classica. In altre parole, se aggiungiamo alla logica minimale il principio $not not A -> A$, otteniamo, come teoremi derivabili nella logica classica, sia il principio del terzo escluso, ovvero #pb[Tnd] o #pb[Em], sia l'_ex falso quodlibet sequitur_ nella forma $(A and (A -> bot)) -> B$.
+
+Anche in logica minimale, inoltre, le formule _negative_ si comportano in modo piacevole, ovvero, come è stato osservato nella sezione sulla _Traduzione di Gödel_, quelle formule che non contengono $or$ ed $exists$, e in cui tutte le formule atomiche diverse da $bot$ compaiono negate. Per una formula negativa $A$, infatti, vale che
+$
+  scripts(tack)_m A <-> not not A
+$
+Questa proprietà è detta di _stabilità rispetto alla traduzione negativa_, ovvero $scripts(tack)_m A^circle.small <-> A$. Ripercorrendo i risultati della sezione sulla _Traduzione di Gödel_, si ottengono allora i seguenti teoremi, in cui la logica intuizionistica è sostituita dalla logica minimale. Si noti, tuttavia, che questi risultati richiedono, in generale, una manipolazione appropriata delle regole che non possono gestire la contraddizione $bot$. Per questo motivo, non verrà fornita una dimostrazione dei risultati seguenti, poiché esulerebbe dagli scopi del corso.
+
+#teorema[In logica minimale, valgono le seguenti proprietà:
+  + $scripts(tack)_c A <-> A^circle.small$
+  + $Gamma scripts(tack)_c A$ se e solo se $Gamma^circle.small scripts(tack)_m A^circle.small$
+]
+
+#teorema[
+  Se $A$ è negativa, allora $Gamma scripts(tack)_c A$ se e solo se $Gamma scripts(tack)_m A$.
+]
+
+#teorema[
+  Per ogni formula $A$, esiste una formula negativa $B$, ovvero $B = A^circle.small$, tale che $scripts(tack)_c A <-> B$, e $scripts(tack)_c A$ se e solo se $scripts(tack)_m B$.
+]
+
+Dunque, la traduzione $(dot)^circle.small$ _immerge_ la logica classica nella logica minimale, e non soltanto nella logica intuizionistica. Per codificare le dimostrazioni classiche, dunque, è sufficiente il frammento più debole dei tre, privo di qualunque regola sul falso, ovvero il frammento di logica che coincide esattamente con la logica minimale.
+
+Sebbene la logica minimale sa strettamente più debole della logica intuizionistica, si noti che la differenza tra le due riguarda soltanto il falso. Infatti, ogni formula che usa tutti i connettivi tranne la negazione, e, quindi, la contraddizione $bot$, è derivabile in logica minimale se e solo se è derivabile in logica intuizionistica. In altre parole, come precedentemente anticipato, la logica intuizionistica si ottiene dalla logica minimale aggiungendo l'_ex falso quodlibet sequitur_. Un esempio di principio che separa le due logiche è il _sillogismo disgiuntivo_ (#pb[Ds]). In logica intuizionistica, infatti, l'_ex falso_ permette di derivare il seguente teorema:
+$
+  scripts(tack)_i ((A or B) and (A -> bot)) -> B
+$
+ovvero, se vale $A$ oppure $B$, e $A$ è falsa, allora deve valere $B$. La derivazione procede per casi sulla disgiunzione: nel caso $B$ la conclusione è immediata, mentre nel caso $A$ si ottiene $bot$ da $A$ e $A -> bot$, e quindi $B$ per ex falso. Ponendo, per semplicità, $Delta = (A or B) and (A -> bot)$, la derivazione è la seguente.
+#albero(rule(name: $-> I^2$, $Delta -> B$, rule(name: $or E^1$, $B$,
+  rule(name: $and E$, $A or B$, $[Delta]^2$),
+  rule(name: $bot_i$, $B$, rule(name: $-> E$, $bot$, $[A]^1$, rule(name: $and E$, $A -> bot$, $[Delta]^2$))),
+  $[B]^1$)))
+In logica minimale, invece, il caso $A$ si ferma a $bot$, e non è possibile concludere $B$. Il sillogismo disgiuntivo, infatti, non è derivabile in logica minimale.
+
+#esempio[
+  Mostriamo che $scripts(tack)_m not not not A -> not A$. La derivazione non usa alcuna regola sul falso, per cui vale già in logica minimale.
+  #albero(rule(name: $-> I^3$, $not not not A -> not A$, rule(name: $-> I^2$, $not A$, rule(name: $-> E$, $bot$,
+    rule(name: $-> I^1$, $not not A$, rule(name: $-> E$, $bot$, $[A]^2$, $[not A]^1$)),
+    $[not not not A]^3$))))
+]
+
+L'esempio mette in luce perché la logica minimale sia così importante. Infatti, in essa si usano soltanto le regole di introduzione ed eliminazione dei connettivi, ciascuna delle quali ammette un'interpretazione computazionale. La logica minimale corrisponde, infatti, al _tipaggio semplice_ dei linguaggi di programmazione. In altre parole, le regole di tipaggio del $lambda$-calcolo semplicemente tipato, che studieremo nel prossimo capitolo, sono esattamente le regole della logica minimale lette come regole sui programmi. Ad esempio, la regola di astrazione, che assegna a $lambda x. M$ il tipo $s -> t$ se $M$ ha tipo $t$ assumendo che $x$ abbia tipo $s$, corrisponde alla regola $-> I$, mentre la regola di applicazione, che assegna ad $M(N)$ il tipo $t$ se $M$ ha tipo $s -> t$ ed $N$ ha tipo $s$, corrisponde alla regola $-> E$. Analogamente, una coppia $⟨M_1, M_2⟩$ di programmi di tipo $A$ e $B$ ha tipo $A and B$, esattamente come nell'interpretazione #pb[Bhk].
+
+Per completezza, si riportano, infine, alcuni teoremi della logica minimale:
+- $scripts(tack)_m A -> not not A$, per ogni formula $A$
+- $scripts(tack)_m not not bot <-> bot$
+- $scripts(tack)_m not A <-> not not not A$, per ogni formula $A$
+- $scripts(tack)_m not not (A or not A)$
+- $scripts(tack)_m not (A or B) <-> (not A and not B)$
+- $scripts(tack)_m (A or B -> C) <-> (A -> C) and (B -> C)$
+- $scripts(tack)_m (exists x. A -> B) <-> forall x. (A -> B)$, se $x in.not #pb[Fv] (B)$
+- $scripts(tack)_m (C -> A and B) <-> (C -> A) and (C -> B)$
+- $scripts(tack)_m (A -> forall x. B) <-> forall x. (A -> B)$, se $x in.not #pb[Fv] (A)$
+
+#nota[
+  Si osservi che la differenza tra logica minimale, logica intuizionistica e logica classica non risiede nel _linguaggio_, ma nella potenza del _sistema deduttivo_. Le tre logiche condividono, infatti, esattamente lo stesso insieme di formule, costruite a partire dagli stessi simboli e dagli stessi connettivi. Ad esempio, una formula come $A or not A$ è ben formata in ciascuna di esse. Ciò che cambia è l'insieme delle regole di derivazione a disposizione, e quindi l'insieme delle formule che è possibile _dimostrare_, in quanto la logica minimale dispone soltanto delle regole di introduzione ed eliminazione dei connettivi, la logica intuizionistica aggiunge l'_ex falso_, e la logica classica aggiunge #pb[Raa]. L'insieme delle formule del linguaggio determina, invece, un aspetto diverso della logica, ossia il suo _ordine_, ovvero se la logica è proposizionale, dei predicati (del primo ordine), del secondo ordine, e così via. Le due scelte sono indipendenti, ed è per questo motivo che possiamo parlare, ad esempio, sia di logica proposizionale classica che di logica proposizionale intuizionistica, oppure di logica dei predicati classica, intuizionistica o minimale.
+]
