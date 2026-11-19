@@ -1,0 +1,343 @@
+// =====================================================================
+//  Template per le sbobine (Complessità, Logica in AI)
+// =====================================================================
+
+#import "@preview/cetz:0.3.4"
+#import "@preview/lovelace:0.3.1": pseudocode-list
+#import "@preview/curryst:0.5.1": rule, prooftree
+
+// ---------------------------------------------------------------------
+//  Parametri di stile facilmente modificabili
+// ---------------------------------------------------------------------
+#let chapter-weight = "regular"   // "regular" oppure "bold" per i titoli dei capitoli
+#let body-size = 10pt
+#let line-thickness = 0.5pt       // spessore delle linee nei disegni
+
+// ---------------------------------------------------------------------
+//  Notazione
+// ---------------------------------------------------------------------
+// Classi di complessità di una sola lettera (le altre, come NP, EXP, PSPACE,
+// vengono messe in grassetto automaticamente da una regola `show`).
+#let PP = $upright(bold(P))$
+#let LL = $upright(bold(L))$
+
+// Nome di un problema nel testo, in maiuscoletto (es. #pb[Ham-Path])
+#let pb(x) = box(text(font: "TeX Gyre Pagella", smallcaps(x)))
+
+// ---------------------------------------------------------------------
+//  Enunciati
+// ---------------------------------------------------------------------
+// Gli enunciati sono "figure" di tipo "thm": così si possono etichettare
+// (#lemma[...] <lemma:x>) e richiamare con @lemma:x ("Lemma 2.3").
+// Tutti i tipi condividono lo stesso contatore, azzerato a ogni capitolo.
+#let thm-counter = counter(figure.where(kind: "thm"))
+
+#let thm-numbering(..n) = {
+  let h = counter(heading).get()
+  let ch = if h.len() > 0 { h.first() } else { 0 }
+  [#ch.#n.pos().last()]
+}
+
+// `tdc: i` numera l'enunciato come "TdC.i" (numerazione della prof per la
+// prova del Teorema di Completezza), senza consumare la numerazione del capitolo.
+#let make-thm(kind, italic-body: true) = (title: none, numbered: true, tdc: none, body) => figure(
+  kind: if tdc != none { "thm-tdc" } else { "thm" },
+  supplement: kind,
+  numbering: if tdc != none { (..n) => [TdC.#tdc] } else if numbered { thm-numbering } else { none },
+  outlined: false,
+  [#if title != none [(#title) ]#if italic-body { emph(body) } else { body }],
+)
+
+#let thm-show(it) = block(width: 100%, above: 1.5em, below: 1.5em, breakable: true, align(left)[
+  #strong[§ #it.supplement#if it.numbering != none [ #it.counter.display(it.numbering)].]
+  #it.body
+])
+
+#let teorema = make-thm("Teorema")
+#let lemma = make-thm("Lemma")
+#let corollario = make-thm("Corollario")
+#let proposizione = make-thm("Proposizione")
+#let congettura = make-thm("Congettura")
+#let definizione = make-thm("Definizione", italic-body: false)
+#let osservazione = make-thm("Osservazione", italic-body: false)
+#let esempio = make-thm("Esempio", italic-body: false)
+#let esercizio = make-thm("Esercizio", italic-body: false)
+#let affermazione = make-thm("Affermazione", italic-body: false)
+
+#let dimostrazione(title: "Dimostrazione", body) = block(width: 100%, above: 1em, below: 1.5em, breakable: true)[
+  #emph[#title.] #body #h(1fr) $square$
+]
+
+#let soluzione(title: "Soluzione", body) = block(width: 100%, above: 1em, below: 1.5em, breakable: true)[
+  #emph[#title.] #body #h(1fr)
+]
+
+// Nota (usata raramente: di norma si preferisce "Si noti che...")
+#let nota(label: "Nota", body) = block(width: 100%, above: 1em, below: 1em)[
+  #emph[#label.] #body
+]
+
+// Problema computazionale:
+//   NOME
+//   Input:   ...
+//   Output:  ...
+#let problema(name, input: none, output: none) = block(
+  width: 100%, above: 1.5em, below: 1.5em, breakable: false,
+)[
+  *§* #smallcaps(name) \
+  #grid(
+    columns: (auto, 1fr),
+    column-gutter: 1.2em,
+    row-gutter: 0.65em,
+    strong[Input:], input,
+    strong[Output:], output,
+  )
+]
+
+// ---------------------------------------------------------------------
+//  Algoritmi (pacchetto lovelace, stile algorithm2e)
+// ---------------------------------------------------------------------
+#let algoritmo(nome, numbered: true, line-numbers: false, body) = figure(
+  kind: "algorithm",
+  supplement: [Algoritmo],
+  numbering: if numbered { "1" } else { none },
+  block(
+    width: 100%,
+    stroke: (top: 0.8pt + black, bottom: 0.8pt + black),
+    inset: (bottom: 0.6em),
+    breakable: false,
+  )[
+    #set par(spacing: 0pt)
+    #block(width: 100%, stroke: (bottom: 0.5pt + black), inset: (x: 0.3em, y: 0.45em), above: 0pt, below: 0pt)[
+      #if numbered {
+        strong[Algoritmo #context counter(figure.where(kind: "algorithm")).display():]
+      } else {
+        strong[Algoritmo:]
+      }
+      #smallcaps(nome)
+    ]
+    #pad(left: 0.6em, top: -1.5em, bottom: -0.1em, pseudocode-list(
+      stroke: 0.5pt + black,
+      hooks: 0.4em,
+      indentation: 1.4em,
+      line-gap: 0.65em,
+      line-numbering: if line-numbers { "1:" } else { none },
+      body,
+    ))
+  ],
+)
+
+// ---------------------------------------------------------------------
+//  Disegni
+// ---------------------------------------------------------------------
+// Canvas con linee sottili di default
+#let canvas(length: 1cm, body) = cetz.canvas(length: length, {
+  cetz.draw.set-style(
+    stroke: line-thickness + black,
+    mark: (fill: black, scale: 0.5),
+  )
+  body
+})
+
+// Arco leggermente curvo tra due punti (bend > 0 curva a sinistra, < 0 a destra)
+#let edge(a, b, bend: 0.12, ..style) = {
+  let (x1, y1) = a
+  let (x2, y2) = b
+  let (mx, my) = ((x1 + x2) / 2, (y1 + y2) / 2)
+  let ctrl = (mx - bend * (y2 - y1), my + bend * (x2 - x1))
+  cetz.draw.bezier(a, b, ctrl, ..style)
+}
+
+// Etichetta con sfondo bianco (così archi e linee non si sovrappongono al testo)
+#let lbl(pos, body, ..args) = cetz.draw.content(
+  pos, box(fill: white, inset: 1.5pt, body), ..args,
+)
+
+// Figura centrata con didascalia
+#let fig(body, caption: none) = figure(body, caption: caption)
+
+// ---------------------------------------------------------------------
+//  Impostazioni generali del documento
+// ---------------------------------------------------------------------
+#let sbobina(title: "", subtitle: "", author: "", year: "", university: "", classi-complessita: true, body) = {
+  set document(title: title, author: author)
+  set text(font: "TeX Gyre Pagella", size: body-size, lang: "it")
+  set page(
+    paper: "a4",
+    margin: (x: 3.6cm, y:3.3cm),
+    numbering: "1",
+  )
+  set par(justify: true, leading: 0.62em, spacing: 1.2em)
+  set heading(numbering: "1.1")
+  set math.equation(numbering: none)
+  set list(indent: 0.8em)
+  set enum(indent: 0.8em)
+
+  // Classi di complessità sempre in grassetto
+  // (disattivabile con `classi-complessita: false`, ad es. in Logica, dove
+  //  P, Q, ... sono simboli di predicato e non devono finire in grassetto)
+  show regex("\b(co-)?(N?P|NL|N?EXP|EXPTIME|N?PSPACE|NPC|NPO|PSC|N?TIME|N?SPACE|APX|(log|poly)APX|F?PTAS)\b"): it => if classi-complessita { text(weight: "bold", it) } else { it }
+
+  // Nota a piè di pagina: separatore lungo quanto la riga
+  set footnote.entry(separator: line(length: 100%, stroke: 0.5pt))
+
+  // Figure
+  set figure(gap: 1em)
+  show figure: set block(above: 1.8em, below: 1.8em)
+  show figure.caption: set text(size: 0.9em)
+  show figure.where(kind: "thm"): set block(breakable: true)
+  show figure.where(kind: "thm"): thm-show
+  show figure.where(kind: "thm-tdc"): set block(breakable: true)
+  show figure.where(kind: "thm-tdc"): thm-show
+  show figure.where(kind: "algorithm"): it => block(above: 1.6em, below: 1.6em, width: 100%, breakable: true, align(left, it.body))
+
+  // ----- Stile A: "Classico" -----
+  let grigio = luma(55%)
+  show heading.where(level: 1): it => {
+    pagebreak(weak: true)
+    thm-counter.update(0)
+    set par(justify: false)
+    set text(hyphenate: false, weight: "regular")
+    v(2.5cm)
+    let titolo = text(size: 1.6em, tracking: 0.01em, smallcaps(it.body))
+    block(width: 100%, below: 3em, if it.numbering != none {
+      grid(columns: (auto, 1fr), column-gutter: 0.9em, align: (right + horizon, left + horizon),
+        text(size: 54pt, fill: grigio, counter(heading).display("1")),
+        block(stroke: (left: 0.6pt), inset: (left: 0.9em, y: 0.5em), titolo))
+    } else { titolo })
+  }
+  show heading.where(level: 2): it => block(above: 2.4em, below: 1.2em, sticky: true)[
+    #set text(size: 1.15em, weight: "regular")
+    #if it.numbering != none [#box(width: 2.6em, counter(heading).display())]#smallcaps(it.body)
+  ]
+  show heading.where(level: 3): it => block(above: 2em, below: 1em, sticky: true)[
+    #set text(weight: "regular", style: "italic")
+    #if it.numbering != none [#box(width: 2.6em, text(style: "normal", counter(heading).display()))]#it.body
+  ]
+
+  // Indice
+  set outline.entry(fill: h(1fr))
+  show outline.entry.where(level: 1): it => {
+    v(1.4em, weak: true)
+    link(it.element.location(), grid(columns: (2.6em, 1fr, auto),
+      text(fill: grigio, it.prefix()), text(size: 1.15em, smallcaps(it.body())), it.page()))
+  }
+  // Voci di livello 2 e 3: numero | titolo (va a capo prima del numero di pagina) | pagina
+  let voce-indice(it, rientro, colonna) = pad(left: rientro, link(it.element.location(), grid(
+    columns: (colonna, 1fr, auto),
+    align: (left + top, left + top, right + bottom),
+    it.prefix(),
+    pad(right: 2.5em, it.body()),
+    it.page(),
+  )))
+  show outline.entry.where(level: 2): it => voce-indice(it, 2.6em, 2.6em)
+  show outline.entry.where(level: 3): it => text(size: 0.95em, voce-indice(it, 5.2em, 3.2em))
+
+  // Frontespizio (pagina senza numero)
+  page(numbering: none, {
+    set par(justify: false)
+    set text(hyphenate: false)
+    set align(center)
+    v(4.5cm)
+    line(length: 100%, stroke: 0.4pt)
+    v(1.2em)
+    text(size: 25pt, tracking: 0.01em, smallcaps(title))
+    v(0.4em)
+    line(length: 100%, stroke: 0.4pt)
+    v(1.5em)
+    // Righe sotto al titolo: corso, autore, anno accademico, università
+    text(size: 13pt, subtitle)
+    v(0.8em)
+    text(size: 11pt, author)
+    v(-0.5em)
+    text(size: 11pt, year)
+    v(-0.5em)
+    text(size: 11pt, university)
+    v(1fr)
+  })
+
+  outline(indent: auto, depth: 2)
+  body
+}
+
+// Commento all'interno di un algoritmo
+#let cmt(body) = [#h(1.2em)$triangle.r$ #body]
+
+// Arco curvo accorciato di `gap` alle estremità (utile tra nodi con etichetta)
+#let cedge(a, b, bend: 0.12, gap: 0.3, gap-end: auto, ..style) = {
+  let (x1, y1) = a
+  let (x2, y2) = b
+  let d = calc.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+  let (ux, uy) = ((x2 - x1) / d, (y2 - y1) / d)
+  let g2 = if gap-end == auto { gap } else { gap-end }
+  edge((x1 + ux * gap, y1 + uy * gap), (x2 - ux * g2, y2 - uy * g2), bend: bend, ..style)
+}
+
+// Citazione (epigrafe) sotto il titolo di un capitolo
+#let epigrafe(autore, fonte: none, body) = {
+  v(-1.5em)
+  align(right, block(width: 60%, below: 2.5em)[
+    #set par(justify: false)
+    #set align(right)
+    #set text(size: 1em)
+    #emph(body)
+    #v(0.2em)
+    #set text(size: 0.9em)
+    — #smallcaps[#autore]#if fonte != none [, #emph(fonte)]
+  ])
+}
+
+// =====================================================================
+//  Aggiunte per la sbobina di Logica
+// =====================================================================
+
+// ---------------------------------------------------------------------
+//  Alberi di derivazione (deduzione naturale, pacchetto curryst)
+// ---------------------------------------------------------------------
+// Uso:
+//   #albero(rule(name: $-> I^1$, $phi -> psi$, $psi$))
+//   #albero(dimensione: 8.5pt, ...)   per alberi molto larghi
+// `rule(name: R, conclusione, premessa1, premessa2, ...)`; ogni premessa
+// può essere a sua volta una `rule(...)` o una formula.
+#let albero(t, dimensione: none, ..args) = align(center, block(above: 1.2em, below: 1.2em, {
+  if dimensione != none { set text(size: dimensione) }
+  prooftree(t,
+    min-premise-spacing: if dimensione != none { 0.8em } else { 1.2em },
+    title-inset: 3pt,
+    stroke: line-thickness,
+    ..args)
+}))
+
+// Più alberi affiancati, allineati sulla conclusione
+#let alberi(..ts) = align(center, block(above: 1.2em, below: 1.2em,
+  stack(dir: ltr, spacing: 3em,
+    ..ts.pos().map(t => align(bottom, prooftree(t, min-premise-spacing: 1.2em, title-inset: 3pt, stroke: line-thickness))))))
+
+// Derivazione "astratta" usata come premessa: ipotesi, puntini, conclusione
+//   deriv($[phi]^1$, $dots.v$, $psi$)   oppure   deriv($[phi]$, $cal(D)$, $psi$)
+#let deriv(..righe) = box(align(center, stack(dir: ttb, spacing: 4pt,
+  ..righe.pos().map(r => align(center, r)))))
+
+// ---------------------------------------------------------------------
+//  Grafi: alberi sintattici e modelli di Kripke (disegnati con cetz)
+// ---------------------------------------------------------------------
+// nodi:  array di (x, y, nome, etichetta), in pt, con y misurata dall'alto
+//        `nome` va a sinistra del nodo (es. il mondo $w_0$),
+//        `etichetta` a destra (es. V(w) = {p})
+// archi: array di (i, j), indici dei nodi da collegare
+#let grafo(larghezza: 160pt, altezza: 90pt, nodi: (), archi: ()) = align(center, block(above: 1.2em, below: 1.2em,
+  cetz.canvas(length: 1pt, {
+    import cetz.draw: *
+    set-style(stroke: line-thickness + black)
+    let num(v) = if type(v) == length { v / 1pt } else { v }
+    let H = num(altezza)
+    let p(n) = (num(n.at(0)), H - num(n.at(1)))
+    for (i, j) in archi { line(p(nodi.at(i)), p(nodi.at(j))) }
+    for n in nodi {
+      let (x, y, nome, lab) = n
+      circle(p(n), radius: 1.8, fill: black)
+      let (px, py) = p(n)
+      if nome != [] and nome != none { content((px - 4, py), anchor: "east", text(size: 0.9em, nome)) }
+      if lab != [] and lab != none { content((px + 4, py), anchor: "west", text(size: 0.9em, lab)) }
+    }
+  })))
