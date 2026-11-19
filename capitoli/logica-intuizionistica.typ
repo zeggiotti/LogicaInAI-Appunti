@@ -4,7 +4,7 @@
 
 In questo capitolo si introduce la seconda parte del corso, il cui obiettivo è arrivare alla dimostrazione della _corrispondenza di Curry-Howard_, ossia la corrispondenza tra programmi e dimostrazioni. Con questo scopo, si affronteranno tre argomenti, ovvero la _logica intuizionistica_, che definiremo e studieremo per arrivare all'automatizzazione delle dimostrazioni, e in particolare l'interpretazione intuizionistica dei connettivi e dei principi classici e la semantica #pb[Bhk] della logica intuizionistica, il _$lambda$-calcolo_ e la _normalizzazione_ delle dimostrazioni, che sfrutta l'idea che le formule corrispondano a tipi in un linguaggio di programmazione, e le prove corrispondano a programmi, per computare mediante le prove. Successivamente, studieremo la logica modale, con la teoria della dimostrazione e la normalizzazione della logica modale, e le sue applicazioni ai sistemi multi-agente e all'epistemologia. Osserveremo che, scartando anche la regola _ex falso_ oltre a $#pb[Raa]$ e $#pb[Tnd]$, si ottiene la logica minimale, che corrisponde al tipaggio semplice dei linguaggi di programmazione. In particolare, il $lambda$-calcolo che studieremo è una variante del $lambda$-calcolo semplicemente tipato.
 
-== Sulla Differenza tra Ragionamento Classico e Costruttivo
+== _Sulla Differenza tra Ragionamento Classico e Costruttivo_
 
 Il _costruttivismo_ è un approccio al ragionamento matematico in cui, con l'obiettivo di dimostrare che un particolare oggetto matematico esiste, è sempre necessario _costruirlo_. Nella matematica _classica_, invece, è possibile dimostrare l'esistenza di un oggetto matematico senza trovarlo esplicitamente, ad esempio dimostrando che la sua non esistenza porterebbe ad una contraddizione. In questo contesto, una prova in _logica intuizionistica_, la quale costituisce un sistema logico costruttivistico, deve sempre mostrare un'esecuzione, mediante la _corrispondenza di Curry-Howard_, in grado di validare quella specifica prova. L'_intuizionismo_, fondato dal matematico olandese L. E. J. Brouwer all'inizio del XX secolo, è una delle scuole di pensiero costruttiviste, ed è quella che studieremo, applicandola alla logica proposizionale, alla logica del primo ordine e alla logica minimale. Il punto centrale dell'intuizionismo è una nuova nozione di verità:
 $
@@ -50,7 +50,7 @@ $
   _Dimostrazione_. Supponiamo che esista soltanto un numero finito $k$ di numeri primi $p_1 = 2, p_2 = 3, dots, p_k$. Sia $n := p_1 dot dots dot p_k + 1$, e scegliamo un divisore primo $p_i$ di $n$, ossia un divisore tale che $n = p_i dot n_1$ per qualche intero $n_1 in NN$. Per definizione, possiamo anche scrivere $n = p_i dot n_2 + 1$ per il valore $n_2=p_1dot dots dot p_(i-1) dot p_(i+1) dot dots dot p_k in NN$. Dunque $p_i dot n_1 = p_i dot n_2 + 1$, ossia $p_i dot (n_1 - n_2) = 1$. Nei numeri naturali, se $a dot b = 1$ allora $a = b = 1$, che contraddice l'ipotesi che $p_i$ sia primo. La dimostrazione procede per assurdo, ma dimostra un enunciato _negativo_, ossia che l'insieme dei numeri primi _non è finito_, e dunque la contraddizione è usata per introdurre una negazione mediante la regola di derivazione $-> I$ con conclusione $not A$, che è perfettamente lecito anche in logica intuizionistica. Inoltre, essa fornisce implicitamente un procedimento per costruire, a partire da una lista di numeri primi, un nuovo numero primo non presente nella lista.
 ]
 
-== La Deduzione Naturale Intuizionistica
+== _La Deduzione Naturale Intuizionistica_
 
 Dopo aver introdotto le basi del pensiero costruttivistico, e l'approccio intuizionistico alle dimostrazioni, derivazioni e al pensiero matematico, introduciamo il sistema deduttivo che permette di derivare meccanicamente, e in funzione della sola sintassi di una formula, una derivazione e, quindi, una dimostruzione per un enunciato che può essere considerato valido in logica intuizionistica. Indichiamo con $cal(N)_C$ la deduzione naturale classica, studiata nei capitoli precedenti, e con $cal(N)_I$ la deduzione naturale intuizionistica. Il sistema di deduzione naturale per l'intuizionismo si ottiene eliminando la regola $#pb[Raa]$, e mantenendo l'_ex falso_:
 $
@@ -92,7 +92,7 @@ In logica intuizionistica, inoltre, valgono i seguenti principi:
 
 La proprietà di disgiunzione è la traduzione, a livello di sistema deduttivo, del significato costruttivo della disgiunzione, e chiaramente non sempre vale in logica classica, siccome si può derivare $scripts(tack)_c P or not P$ ma, in generale, né $P$ né $not P$ ammettono una derivazione nota. La doppia negazione del terzo escluso, invece, mostra che, sebbene non si possa affermare $P or not P$, non si può neanche negarlo. Dunque, il terzo escluso non è _falso_ in logica intuizionistica, semplicemente non è dimostrabile.
 
-== Sistemi Deduttivi Alternativi: la Presentazione alla Hilbert
+== _Sistemi Deduttivi Alternativi: la Presentazione alla Hilbert_
 
 Oltre alla deduzione naturale, esistono altri sistemi deduttivi per la logica intuizionistica. Storicamente, il primo ad essere stato introdotto è il _sistema alla Hilbert_, in cui le dimostrazioni non sono alberi di derivazione, ma sequenze lineari di formule, ciascuna delle quali è un _assioma_, un'ipotesi, oppure è ottenuta da formule precedenti mediante un'unica regola di inferenza, il _modus ponens_. Tutto il _ragionamento_ compiuto dal sistema deduttivo, quindi, è codificato negli assiomi, che sono schemi di formule. Per la logica proposizionale intuizionistica, gli schemi di assiomi del _sistema alla Hilbert_ sono i seguenti:
 + $phi -> (psi -> phi)$
@@ -284,7 +284,7 @@ Come conseguenza del Teorema di Correttezza, infine, possiamo dimostrare la _non
   diversi da quelli mostrati negli esempi precedenti.
 ]
 
-== Immergere la Logica Classica nella Logica Intuizionistica: La Traduzione di Gödel
+== _Immergere la Logica Classica nella Logica Intuizionistica: La Traduzione di Gödel_
 
 Abbiamo precedentemente osservato che la logica intuizionistica è piuttosto debole rispetto alla dimostrabilità, in quanto permette di derivare meno teoremi rispetto alla logica classica. Tuttavia, è sufficientemente espressiva da riuscire a _codificare_ ed _immergere_ la logica classica al proprio interno. Lo strumento che permette questa codifica è la _traduzione di Gödel_, anche detta _traduzione negativa_, che associa ad ogni formula una formula classicamente equivalente, in cui la disgiunzione e il quantificatore esistenziale, ossia i connettivi che in logica intuizionistica hanno un significato costruttivo forte e distinto rispetto al significato ad essi attribuito dalla logica classica, vengono sostituiti dalle loro versioni _deboli_, ovvero il significato espresso mediante la loro negazione.
 

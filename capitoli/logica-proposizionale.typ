@@ -4,7 +4,7 @@
 
 La logica proposizionale è il sistema logico elementare e più semplice che studieremo, ed è anche il punto di partenza di tutti i sistemi logici che saranno introdotti successivamente. In questa logica, le unità elementari delle argomentazioni sono le _proposizioni atomiche_, ovvero affermazioni indivisibili che possono essere vere o false, come "piove" oppure "$2 + 2 = 4$", le quali vengono combinate mediante i _connettivi_ logici per formare proposizioni più complesse. La logica proposizionale, per costruzione, non è in grado di osservare il valore di verità di una singola proposizione atomica. Infatti, per essa, le proposizioni atomiche "piove" e "$2 + 2 = 4$" sono semplicemente due simboli sintattici, $p_0$ e $p_1$, il cui unico attributo rilevante è il valore di verità. Questa limitazione, che verrà superata dalla logica dei predicati, rende la logica proposizionale poco espressiva, ma allo stesso tempo ci permette di introdurre, in un contesto semplice e diretto, tutti gli strumenti fondamentali del corso, ovvero la definizione induttiva della sintassi, la semantica, la deduzione naturale e i Teoremi di Correttezza e Completezza.
 
-== La Sintassi della Logica Proposizionale
+== _La Sintassi della Logica Proposizionale_
 
 Come ogni linguaggio formale, il linguaggio della logica proposizionale è definito a partire da un _alfabeto_, ovvero un insieme di simboli, e da un insieme di regole formali che stabiliscono quali sequenze di simboli sono considerate formule ben formate. Queste due componenti, insieme, costituiscono la _sintassi_ della logica proposizionale.
 
@@ -97,7 +97,7 @@ Un'altra operazione sintattica definita per ricorsione, e della quale faremo un 
 
 In altre parole, la sostituzione rimpiazza _ogni_ occorrenza del simbolo $p$ in $phi$ con la formula $psi$, lasciando invariato il resto della formula.
 
-== La Semantica della Logica Proposizionale
+== _La Semantica della Logica Proposizionale_
 
 Dopo aver definito rigorosamente la sintassi delle formule ben formate in logica proposizionale, il nostro scopo è quello di attribuire un significato alle formule. Nella logica proposizionale classica, il significato di una formula è semplicemente il suo _valore di verità_, che può essere $1$ (vero) oppure $0$ (falso). L'idea è che il valore di verità di una formula composta dipenda soltanto dai valori di verità delle sue componenti, secondo le usuali tabelle di verità dei connettivi.
 
@@ -175,7 +175,7 @@ Concludiamo la sezione con un teorema che giustifica la sostituzione di formule 
 
 In altre parole, due formule semanticamente equivalenti possono essere sostituite in modo intercambiabile al posto di un simbolo atomico presente in una terza formula proposizionale $psi$ arbitraria.
 
-== La Deduzione Naturale in Logica Proposizionale
+== _La Deduzione Naturale in Logica Proposizionale_
 
 Nei sistemi logici che considereremo in questo capitolo e nei successivi, dedurre significa _dimostrare qualcosa a partire da un insieme di ipotesi_ in modo formale, ossia in modo tale che la dimostrazione possa essere verificata ed, idealmente, costruita da una macchina. Le ipotesi sono le premesse da cui ha inizio il ragionamento, mentre la _tesi_ è la formula che desideriamo dimostrare. Se la semantica descrive la verità matematica di formule ben formate, ovvero $Gamma tack.rr alpha$, il sistema deduttivo descrive la derivabilità sintattica delle stesse formule ben formate, ovvero $Gamma tack alpha$, che si ottiene applicando un insieme finito di regole di deduzione. Quando $Gamma = emptyset$, e quindi $tack alpha$, si dice che $alpha$ è un _teorema_. In altre parole, la formula ben formata $alpha$ è un teorema quando è sempre derivabile, senza dover assumere alcuna ipotesi. Il collegamento tra le due nozioni è dato dai Teoremi di Correttezza e Completezza, che dimostreremo al termine del capitolo. Storicamente, negli anni \'30 il logico tedesco Gerhard Gentzen introdusse due sistemi deduttivi che, a differenza dei sistemi assiomatici dell'epoca, avevano l'obiettivo di riprodurre il modo in cui i matematici ragionano effettivamente quando sono costretti a fornire la dimostrazione di un teorema. Questi due sistemi deduttivi sono il _calcolo dei sequenti_ e la _deduzione naturale_. La deduzione naturale fu successivamente sviluppata e studiata in modo sistematico da Dag Prawitz nel 1965. Altri sistemi deduttivi noti sono i _tableaux semantici_ e i sistemi alla Hilbert. L'obiettivo comune di questi sistemi è la completa formalizzazione del ragionamento e delle dimostrazioni, che è il primo passo verso la loro _automatizzazione_. Vedremo che, tuttavia, per automatizzare la deduzione naturale in modo che le dimostrazioni abbiano un contenuto computazionale, è necessario scartare alcune regole e principi logici _classici_, come la riduzione all'assurdo, e dunque costruire una logica intuizionistica.
 
@@ -328,7 +328,7 @@ In altre parole, la notazione $Gamma tack phi$ significa che esiste una derivazi
 - se $Gamma tack bot$, allora $Gamma tack phi$
 - se $Gamma union {not phi} tack bot$, allora $Gamma tack phi$
 
-== Il Principio del Terzo Escluso
+== _Il Principio del Terzo Escluso_
 
 Introduciamo, allora, le regole per il connettivo logico di disgiunzione, che è stato inizialmente escluso. Infatti, il connettivo $or$ è molto più complesso da codificare rispetto al connettivo $and$, sia dal punto di vista delle regole di deduzione naturale che da un punto di vista computazionale, quando ad ogni dimostrazione associamo una computazione. Per questo motivo, talvolta, non viene codificato all'interno di implementazioni automatizzate di un sistema logico.#footnote[Allo stesso modo, talvolta, in logica del primo ordine si sceglie di codificare soltanto il quantificatore $forall$, e non il quantificatore $exists$.] Le regole di introduzione sono semplici, in quanto, per dimostrare $phi or psi$ è sufficiente dimostrare $phi$, oppure dimostrare $psi$.
 #alberi(
@@ -470,7 +470,7 @@ In conclusione, tutti i teoremi della logica proposizionale classica che utilizz
 sono esempi di teoremi classici che non possono valere anche in logica intuizionistica.
 
 
-== I Teoremi di Correttezza e di Completezza
+== _I Teoremi di Correttezza e di Completezza_
 
 Per concludere il capitolo riguardante la logica proposizionale, colleghiamo le nozioni di sintassi e di semantica definite in questo sistema logico, per mezzo dei Teoremi di Correttezza e di Completezza. Il primo risultato che dimostriamo è il Teorema di Correttezza, il quale afferma che il sistema deduttivo della logica proposizionale non permette di derivare formule semanticamente false. Quindi, ogni formula che è derivabile dall'insieme di ipotesi $Gamma$, è necessariamente una conseguenza semantica dell'insieme $Gamma$. Per la dimostrazione, useremo le seguenti proprietà della conseguenza semantica, tutte di immediata verifica, dove scriviamo $Gamma, Gamma'$ per $Gamma union Gamma'$, $Gamma, phi$ per $Gamma union {phi}$, e $[| Gamma |]_v = 1$ per indicare che $[| A |]_v = 1$ per ogni $A in Gamma$:
 - se $Gamma tack.rr phi$ e $Gamma subset.eq Gamma'$, allora $Gamma' tack.rr phi$

@@ -53,7 +53,7 @@ A partire dal tipo di similarità si può costruire il linguaggio formale utiliz
 
 Si osservi la differenza tra il simbolo $overline(c)_i$, che è un oggetto sintattico, e l'elemento $c_i in A$ di una struttura matematica, che è un oggetto semantico. Analogamente, il simbolo di predicato $P_i$ è solo un oggetto sintattico, mentre la relazione $R_i$ è un sottoinsieme del dominio che descrive una relazione tra oggetti matematici del dominio, ed è rappresentato dal simbolo $P_i$. Il simbolo di uguaglianza $=$ è un predicato binario sempre presente, che riceve un'interpretazione fissata. Ad esempio, un linguaggio di tipo $⟨ 2; 2, 1; 1 ⟩$ ha i simboli di predicato $L$ e $=$, i simboli di funzione binaria $p$ e funzione unaria $s$, e il simbolo di costante $overline(0)$. Interpretando questo tipo di similarità nella struttura matematica $⟨ NN, <, +, S, 0 ⟩$, il simbolo $L$ denoterà la relazione $<$ e il simbolo $p$ la somma $+$.
 
-== La Sintassi della Logica dei Predicati
+== _La Sintassi della Logica dei Predicati_
 
 La sintassi della logica del primo ordine prevede due _categorie sintattiche_, ovvero i _termini_, che denotano oggetti del dominio, e le _formule_, che esprimono affermazioni riguardo tali oggetti, e a cui sarà associato un valore di verità. Come per la logica proposizionale, entrambe le categorie sono definite induttivamente.
 
@@ -186,7 +186,7 @@ Il corollario garantisce che è sempre possibile _rinominare_ una variabile con 
 
 Grazie al secondo risultato, possiamo sempre assumere, a meno di rinominare le variabili legate, che i termini oggetto di sostituzione siano sempre liberi per le variabili sostituite.
 
-== La Deduzione Naturale per la Logica dei Predicati
+== _La Deduzione Naturale per la Logica dei Predicati_
 
 Siccome la logica proposizionale può essere interpretata come un frammento della logica al primo ordine, possiamo estendere il sistema di deduzione naturale per la logica proposizionale classica con le regole di deduzione per i quantificatori, ottenendo il sistema di deduzione naturale per la logica del primo ordine. Nello stesso contesto, scriveremo $phi(x)$ e $phi(t)$ per indicare, rispettivamente, $phi$ e $phi[t slash x]$, e, come al solito, $"hp"(cal(D))$ indica l'insieme delle ipotesi non scaricate della derivazione $cal(D)$. Le regole di deduzione naturale proposizionale restano invariate, così come le nozioni di derivazione e di derivabilità. Similmente alla logica proposizionale, restringeremo spesso il linguaggio ai soli connettivi ${and, ->, bot, forall}$, definendo $not phi := phi -> bot$ ed $exists x. phi := not forall x. not phi$.
 
@@ -323,7 +323,7 @@ dove $y_1, dots, y_n$ sono liberi per $x_1, dots, x_n$ in $phi$. Si può dimostr
 )
 poiché, a partire da queste due regole, le regole generali di uguaglianza $#pb[Ri]_1$, $#pb[Ri]_2$ e $#pb[Ri]_3$ sono derivabili mediante deduzione naturale.
 
-== La Semantica della Logica dei Predicati
+== _La Semantica della Logica dei Predicati_
 
 Dopo aver definito la nozione di derivabilità e le regole di deduzione naturale per la logica del primo ordine, vorremmo attribuire un significato semantico alle formule del primo ordine. A differenza della logica proposizionale, in cui era sufficiente assegnare un valore di verità agli atomi, per la logica del primo ordine dobbiamo stabilire di quali oggetti discutano le formule, ossia fissare una struttura che determini come interpretare i simboli del linguaggio derivante dal suo tipo di similarità. Lo scopo è quello di fornire un significato semantico, ossia _denotare_, ad ogni oggetto sintattico del linguaggio formale.
 
@@ -395,7 +395,7 @@ Si noti che, per le formule chiuse, l'ambiente è irrilevante:, in quanto il val
   ossia termini uguali possono essere scambiati in termini e formule senza alterare il valore semantico del termine o della formula in cui è avvenuta la sostituzione.
 ]
 
-== Il Teorema di Correttezza per i Contromodelli
+== _Il Teorema di Correttezza per i Contromodelli_
 
 Come è stato anticipato nel primo capitolo introduttivo, a partire da una sintassi e una semantica ben definite, è possibile dimostrare i Teoremi di Correttezza e Completezza per la logica del primo ordine:
 $
