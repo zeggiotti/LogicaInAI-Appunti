@@ -358,9 +358,9 @@ La dimostrazione segue dal lemma sulle formule negative, e dal Teorema di _Tradu
 
 Concludiamo il presente capitolo con un confronto tra le tre logiche incontrate fino ad ora, che si pone l'obiettivo di chiarire il ruolo delle regole che gestiscono il falso, o la contraddizione. Consideriamo l'insieme delle regole introdotte per la deduzione naturale della logica proposizionale, o della logica dei predicati, e scartiamo le regole che coinvolgono il falso $bot$. Il sistema che otteniamo prende il nome di _logica minimale_ (#pb[Ml]), introdotta da Ingebrigt Johansson nel 1937, e può essere definita come:
 $
-  #pb[Ml] = #pb[Il] without {#pb[Ex Falso]}
+  #pb[Minimal Logic] = #pb[Intuitionistic Logic] without {#pb[Ex Falso]}
 $
-In logica minimale, dunque, non esiste alcuna regola speciale per la contraddizione $bot$, e per la negazione $not$. Il falso, quindi, $bot$ è trattato esattamente come un qualunque altro simbolo proposizionale, al pari dei simboli ${a,b,dots,p,q,dots}$, e la negazione rimane definita come $not phi := phi -> bot$. In altre parole, in logica minimale l'assurdo non ha alcun potere deduttivo e, di conseguenza, dal falso non si può derivare nulla. I due principi che, aggiunti alla logica minimale, caratterizzano le regole sul falso sono i seguenti:
+In logica minimale, dunque, non esiste alcuna regola speciale per la contraddizione $bot$, o per la negazione $not$. Il falso, quindi, è trattato esattamente come un qualunque altro simbolo proposizionale, al pari dei simboli ${a,b,dots,p,q,dots}$, e la negazione rimane definita come $not phi := phi -> bot$. In altre parole, in logica minimale l'assurdo non ha alcun potere deduttivo e, di conseguenza, dal falso non si può derivare nulla. I due principi che, aggiunti alla logica minimale, caratterizzano le regole sul falso sono i seguenti:
 + #pb[Ef] $:= bot -> A$, ovvero _ex falso quodlibet sequitur_
 + #pb[Raa]/#pb[Dna] $:= not not A -> A$, ovvero _reductio ad absurdum_, o _duplex negatio affirmat_
 
@@ -375,7 +375,7 @@ Anche in logica minimale, inoltre, le formule _negative_ si comportano in modo p
 $
   scripts(tack)_m A <-> not not A
 $
-Questa proprietà è detta di _stabilità rispetto alla traduzione negativa_, ovvero $scripts(tack)_m A^circle.small <-> A$. Ripercorrendo i risultati della sezione sulla _Traduzione di Gödel_, si ottengono allora i seguenti teoremi, in cui la logica intuizionistica è sostituita dalla logica minimale. Si noti, tuttavia, che questi risultati richiedono, in generale, una manipolazione appropriata delle regole che non possono gestire la contraddizione $bot$. Per questo motivo, non verrà fornita una dimostrazione dei risultati seguenti, poiché esulerebbe dagli scopi del corso.
+Questa proprietà è detta di _stabilità rispetto alla traduzione negativa_, ovvero $scripts(tack)_m A^circle.small <-> A$. Ripercorrendo i risultati della sezione sulla _Traduzione di Gödel_, si ottengono allora i seguenti teoremi, in cui la logica intuizionistica è sostituita dalla logica minimale. Si noti, tuttavia, che questi risultati richiedono, in generale, una manipolazione appropriata delle regole che non possono gestire la contraddizione $bot$. Per questo motivo, non verrà fornita una dimostrazione completa dei risultati seguenti, poiché esulerebbe dagli scopi del corso.
 
 #teorema[In logica minimale, valgono le seguenti proprietà:
   + $scripts(tack)_c A <-> A^circle.small$
@@ -392,11 +392,11 @@ Questa proprietà è detta di _stabilità rispetto alla traduzione negativa_, ov
 
 Dunque, la traduzione $(dot)^circle.small$ _immerge_ la logica classica nella logica minimale, e non soltanto nella logica intuizionistica. Per codificare le dimostrazioni classiche, dunque, è sufficiente il frammento più debole dei tre, privo di qualunque regola sul falso, ovvero il frammento di logica che coincide esattamente con la logica minimale.
 
-Sebbene la logica minimale sa strettamente più debole della logica intuizionistica, si noti che la differenza tra le due riguarda soltanto il falso. Infatti, ogni formula che usa tutti i connettivi tranne la negazione, e, quindi, la contraddizione $bot$, è derivabile in logica minimale se e solo se è derivabile in logica intuizionistica. In altre parole, come precedentemente anticipato, la logica intuizionistica si ottiene dalla logica minimale aggiungendo l'_ex falso quodlibet sequitur_. Un esempio di principio che separa le due logiche è il _sillogismo disgiuntivo_ (#pb[Ds]). In logica intuizionistica, infatti, l'_ex falso_ permette di derivare il seguente teorema:
+Sebbene la logica minimale sia strettamente più debole della logica intuizionistica, si noti che la differenza tra le due riguarda soltanto il falso. Infatti, ogni formula che usa tutti i connettivi tranne la negazione, e, quindi, la contraddizione $bot$, è derivabile in logica minimale se e solo se è derivabile in logica intuizionistica. In altre parole, come precedentemente anticipato, la logica intuizionistica si ottiene dalla logica minimale aggiungendo l'_ex falso quodlibet sequitur_. Un esempio di principio che separa le due logiche è il _sillogismo disgiuntivo_ (#pb[Ds]). In logica intuizionistica, infatti, l'_ex falso_ permette di derivare il seguente teorema:
 $
   scripts(tack)_i ((A or B) and (A -> bot)) -> B
 $
-ovvero, se vale $A$ oppure $B$, e $A$ è falsa, allora deve valere $B$. La derivazione procede per casi sulla disgiunzione: nel caso $B$ la conclusione è immediata, mentre nel caso $A$ si ottiene $bot$ da $A$ e $A -> bot$, e quindi $B$ per ex falso. Ponendo, per semplicità, $Delta = (A or B) and (A -> bot)$, la derivazione è la seguente.
+ovvero, se vale $A$ oppure $B$, e $A$ è falsa, allora deve valere $B$. La derivazione procede per casi sulla disgiunzione, in cui, nel caso $B$ la conclusione è immediata, mentre nel caso $A$ si ottiene $bot$ da $A$ e $A -> bot$, e quindi $B$ per _ex falso_. Ponendo, per semplicità, $Delta = (A or B) and (A -> bot)$, la derivazione è la seguente.
 #albero(rule(name: $-> I^2$, $Delta -> B$, rule(name: $or E^1$, $B$,
   rule(name: $and E$, $A or B$, $[Delta]^2$),
   rule(name: $bot_i$, $B$, rule(name: $-> E$, $bot$, $[A]^1$, rule(name: $and E$, $A -> bot$, $[Delta]^2$))),
