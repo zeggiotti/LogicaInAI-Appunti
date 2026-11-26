@@ -1,6 +1,6 @@
 #import "../template.typ": *
 
-= Il $lambda$-Calcolo
+= Verso la Corrispondenza di Curry-Howard
 
 Nel capitolo precedente, è stato osservato che, secondo l'interpretazione #pb[Bhk], una prova semantica di un'implicazione $alpha -> beta$ può essere intesa come una _costruzione_, ovvero una funzione che trasforma ogni prova di $alpha$ in una prova di $beta$, e abbiamo annotato le derivazioni in deduzione naturale con oggetti del tipo $h : a |-> a(⟨1, q⟩)$, i quali non sono altro che funzioni calcolabili e, quindi, piccoli programmi. Per formalizzare l'idea alla base della semantica #pb[Bhk], ovvero l'associazione di una funzione _calcolabile_, e quindi di un programma, ad ogni regola di derivazione, e poter fornire un fondamento formale alla _corrispondenza di Curry-Howard_, si necessita di un linguaggio formale in cui le prove e le funzioni siano oggetti matematici direttamente formalizzati dal linguaggio, e che, dunque, possano essere scritti, applicati ad argomenti, passati come argomenti ad altre funzioni e, soprattutto, _calcolati_. Per ragioni di similarità sintattica e formale, la praticità e l'ampio fondamento teorico già sviluppato, possiamo individuare il linguaggio formale di cui si necessita, per la formalizzazione delle funzioni e delle prove descritte dalla semantica #pb[Bhk], nel _$lambda$-calcolo_ introdotto da Alonzo Church negli anni \'30. Nelle prime sezioni del seguente capitolo, introdurremo la variante nota con il nome di $lambda$-calcolo _non tipato_, che è anche la sua versione più semplice, in cui i termini non sono corredati da alcun tipo formale. In particolare, ne ripercorreremo le motivazioni storiche, e ne daremo una definizione formale, con le regole di calcolo che lo caratterizzano. Successivamente, invece, introdurremo i tipi formali mediante i quali è possibile corredare i termini del $lambda$-calcolo, ottenendo il $lambda$-calcolo _semplicemente tipato_, che è lo strumento necessario per fornire un fondamento teorico formale alla _corrispondenza di Curry-Howard_ tra programmi calcolabili e derivazioni in deduzione naturale per la logica intuizionistica del primo ordine.
 
@@ -354,9 +354,234 @@ $
 Le regole $beta$ descrivono la computazione, che consiste nell'applicare una funzione ad un argomento, oppure nel proiettare una coppia sulle sue componenti. Le regole $eta$ esprimono, invece, l'estensionalità, in quanto una funzione che si limita ad applicare $M$ al proprio argomento è $M$ stessa, una coppia formata dalle due proiezioni di $M$ è $M$ stessa, e ogni termine di tipo $1$ è uguale all'unico elemento $*$. Come nel caso non tipato, inoltre, si definiscono la chiusura riflessiva e transitiva $scripts(->)^*$, e l'equivalenza $=$, indotte da queste regole di riduzione.
 
 #esempio(title: [Un linguaggio per i circuiti booleani], numbered: false)[
-  Un linguaggio per la descrizione di circuiti booleani classici può essere ottenuto come istanza del $lambda$-calcolo semplicemente tipato. Infatti, scegliamo i tipi di base $iota ::= "Bool" | "Nat" | "bit"$, ed estendiamo i $lambda$-termini, definiti in precedenza, con le seguenti costanti
-  $
-    M, N ::= dots | overline(0) | overline(1) | "tt" | "ff" | "NOT" | "AND" | "OR" | "CNOT"
-  $
-  dove $overline(0), overline(1) : "bit"$, $"tt", "ff" : "Bool"$, $"NOT" : "bit" -> "bit"$, e $"AND", "OR" : "bit" times "bit" -> "bit"$, mentre $"CNOT" : "bit" times "bit" -> "bit" times "bit"$. Un circuito è semplicemente, quindi, un termine ben tipato costruito a partire dall'applicazione di queste porte logiche classiche a variabili del $lambda$-calcolo di tipo $"bit"$.
+Un linguaggio per la descrizione di circuiti booleani classici può essere ottenuto come istanza del $lambda$-calcolo semplicemente tipato. Infatti, scegliamo i tipi di base $iota ::= "Bool" | "Nat" | "bit"$, ed estendiamo i $lambda$-termini, definiti in precedenza, con le seguenti costanti
+$
+  M, N ::= dots | overline(0) | overline(1) | "tt" | "ff" | "NOT" | "AND" | "OR" | "CNOT"
+$
+dove $overline(0), overline(1) : "bit"$, $"tt", "ff" : "Bool"$, $"NOT" : "bit" -> "bit"$, e $"AND", "OR" : "bit" times "bit" -> "bit"$, mentre $"CNOT" : "bit" times "bit" -> "bit" times "bit"$. Un circuito è semplicemente, quindi, un termine ben tipato costruito a partire dall'applicazione di queste porte logiche classiche a variabili del $lambda$-calcolo di tipo $"bit"$. Si noti che la porta $"CNOT"$ riceve sempre due bit in _input_ e restituisce due bit in _output_. Il primo, detto bit di _controllo_, rimane invariato, mentre il secondo viene negato se e solo se il bit di controllo vale $1$. Alle regole di tipaggio si aggiunge, quindi, un assioma per le costanti, che assegna ad ogni costante $c$ il suo tipo $A_c$:
+#albero(rule(name: [(const)], $Gamma tack c : A_c$))
+Ad esempio, possiamo derivare il giudizio di tipo $tack "NOT" overline(0) : "bit"$, che esprime il fatto che la negazione di un bit è ancora un bit.
+#albero(rule(name: [(app)], $tack "NOT" overline(0) : "bit"$, rule(name: [(const)], $tack "NOT" : "bit" -> "bit"$), rule(name: [(const)], $tack overline(0) : "bit"$)))
+Consideriamo, ad esempio, il seguente circuito con tre ingressi $x$, $y$ e $z$.
+
+#align(center, cetz.canvas(length: 1cm, {
+  import cetz.draw: *
+  set-style(stroke: line-thickness + black)
+  let porta(c, nome, l: 1.1, h: 0.7) = {
+    let (x, y) = c
+    rect((x - l / 2, y - h / 2), (x + l / 2, y + h / 2))
+    content(c, text(size: 0.8em, nome))
+  }
+  // ingressi
+  content((-0.3, 2), $x$)
+  content((-0.3, 1), $y$)
+  content((-0.3, 0), $z$)
+  // NOT su x
+  line((0, 2), (1, 2))
+  porta((1.55, 2), "NOT")
+  // AND
+  line((2.1, 2), (3, 2))
+  line((0, 1), (3, 1))
+  porta((3.55, 1.5), "AND", h: 1.4)
+  // CNOT
+  line((4.1, 1.5), (5, 1.5))
+  line((0, 0), (5, 0))
+  porta((5.55, 0.75), "CNOT", h: 1.9)
+  // OR
+  line((6.1, 1.5), (7, 1.5))
+  line((6.1, 0), (7, 0))
+  porta((7.55, 0.75), "OR", h: 1.9)
+  line((8.1, 0.75), (8.9, 0.75), mark: (end: "straight", scale: 0.6))
+}))
+
+Leggendo il circuito da sinistra verso destra, ossia seguendo il flusso dei bit dagli ingressi all'uscita, otteniamo il $lambda$-termine
+$
+  C := lambda x^"bit". lambda y^"bit". lambda z^"bit". "OR"("CNOT" ⟨"AND" ⟨"NOT" x, y⟩, z⟩)
+$
+in cui ogni porta logica è applicata alla coppia dei suoi ingressi, e le tre astrazioni esterne rappresentano i tre bit di ingresso del circuito. Si noti che le due uscite della porta $"CNOT"$, che formano una coppia di tipo $"bit" times "bit"$, sono esattamente l'ingresso atteso dalla porta $"OR"$. Deriviamo il tipo del termine $C$. Siccome il corpo di $C$ contiene le variabili libere $x$, $y$ e $z$, il suo tipo può essere derivato soltanto nel contesto $Gamma = x : "bit", y : "bit", z : "bit"$, che assegna un tipo agli ingressi del circuito. Per non appesantire la notazione, costruiamo la derivazione per parti, seguendo il circuito da sinistra verso destra. Sia $cal(D)_1$ la derivazione che tipa la coppia degli ingressi della porta $"AND"$:
+#albero(rule(name: [(pair)], $Gamma tack ⟨"NOT" x, y⟩ : "bit" times "bit"$,
+  rule(name: [(app)], $Gamma tack "NOT" x : "bit"$, rule(name: [(const)], $Gamma tack "NOT" : "bit" -> "bit"$), rule(name: [(var)], $Gamma tack x : "bit"$)),
+  rule(name: [(var)], $Gamma tack y : "bit"$)))
+A partire da $cal(D)_1$, la derivazione $cal(D)_2$ tipa l'uscita della porta $"AND"$:
+#albero(rule(name: [(app)], $Gamma tack "AND" ⟨"NOT" x, y⟩ : "bit"$,
+  rule(name: [(const)], $Gamma tack "AND" : "bit" times "bit" -> "bit"$),
+  deriv($cal(D)_1$, $Gamma tack ⟨"NOT" x, y⟩ : "bit" times "bit"$)))
+La derivazione $cal(D)_3$ tipa, poi, la coppia di uscite della porta $"CNOT"$:
+#albero(dimensione: 9pt, rule(name: [(app)], $Gamma tack "CNOT" ⟨"AND" ⟨"NOT" x, y⟩, z⟩ : "bit" times "bit"$,
+  rule(name: [(const)], $Gamma tack "CNOT" : "bit" times "bit" -> "bit" times "bit"$),
+  rule(name: [(pair)], $Gamma tack ⟨"AND" ⟨"NOT" x, y⟩, z⟩ : "bit" times "bit"$,
+    deriv($cal(D)_2$, $Gamma tack "AND" ⟨"NOT" x, y⟩ : "bit"$),
+    rule(name: [(var)], $Gamma tack z : "bit"$))))
+Infine, la derivazione $cal(D)_4$ tipa l'intero corpo del termine $C$, ossia l'uscita della porta $"OR"$:
+#albero(dimensione: 9pt, rule(name: [(app)], $Gamma tack "OR"("CNOT" ⟨"AND" ⟨"NOT" x, y⟩, z⟩) : "bit"$,
+  rule(name: [(const)], $Gamma tack "OR" : "bit" times "bit" -> "bit"$),
+  deriv($cal(D)_3$, $Gamma tack "CNOT" ⟨"AND" ⟨"NOT" x, y⟩, z⟩ : "bit" times "bit"$)))
+Infine, applicando tre volte la regola (abs), le assunzioni sugli ingressi escono dal contesto, nell'ordine inverso rispetto a quello in cui sono state introdotte, fino ad ottenere un giudizio con contesto vuoto:
+#albero(rule(name: [(abs)], $tack C : "bit" -> "bit" -> "bit" -> "bit"$,
+  rule(name: [(abs)], $x : "bit" tack lambda y^"bit". lambda z^"bit". dots : "bit" -> "bit" -> "bit"$,
+    rule(name: [(abs)], $x : "bit", y : "bit" tack lambda z^"bit". dots : "bit" -> "bit"$,
+      deriv($cal(D)_4$, $Gamma tack "OR"("CNOT" ⟨"AND" ⟨"NOT" x, y⟩, z⟩) : "bit"$)))))
+Il termine $C$ è, quindi, un termine chiuso di tipo $"bit"^3->"bit"$, ossia una funzione che riceve i tre bit di ingresso, uno alla volta, e restituisce il bit di uscita. Si osservi che il giudizio sul corpo del circuito vale soltanto nel contesto $Gamma$, mentre il giudizio su $C$ vale nel contesto vuoto, poiché le astrazioni hanno legato tutte le variabili libere.
 ]
+
+Giusti a questo punto, siamo, dunque, in grado di studiare le proprietà fondamentali del $lambda$-calcolo semplicemente tipato. Esse si dividono in due gruppi principali. Il primo gruppo di proprietà garantisce la _sicurezza_, o _safety_, del sistema di tipi, ovvero che i tipi assegnati ai programmi siano affidabili durante tutta la computazione. Il secondo gruppo riguarda, invece, la _terminazione_ della computazione, che, come vedremo, ha conseguenze molto profonde sia sulla potenza espressiva del linguaggio, sia sulla _corrispondenza di Curry-Howard_. Per semplicità, nel seguito consideriamo la sola $beta$-riduzione, al posto del sistema deduttivo di riduzione $beta eta$, che è necessariamente più corposo da gestire. Il primo risultato è un lemma tecnico, che descrive come si comporta il tipaggio rispetto alla sostituzione.
+
+#lemma(title: [Lemma di sostituzione])[
+  Se $Gamma, x : B tack P : A$ e $Gamma tack Q : B$, allora $Gamma tack P[Q slash x] : A$.
+]
+
+Il lemma afferma che, se il termine $P$ ha tipo $A$ assumendo che la variabile $x$ abbia tipo $B$, allora sostituendo $x$ con un qualunque termine $Q$ che ha _effettivamente_ tipo $B$ si ottiene ancora un termine di tipo $A$. In altre parole, una variabile di tipo $B$ può agire come un _segnaposto_ per un qualunque termine di tipo $B$, e il tipaggio non dipende da quale termine venga effettivamente sostituito, purché il tipo sia quello corretto. Il lemma può essere dimostrato per induzione sulla struttura di $P$, e sfrutta in modo cruciale il fatto che $x$ e $Q$ hanno lo stesso tipo. Si noti la stretta analogia con la deduzione naturale, in quanto, se $A$ è derivabile dall'ipotesi $B$, e $B$ è derivabile, allora _innestando_ la derivazione di $B$ al posto delle occorrenze dell'ipotesi $B$ si ottiene una derivazione di $A$ senza l'ipotesi $B$.
+
+#teorema(title: [Subject reduction, o preservazione dei tipi])[
+  Se $Gamma tack M : A$ e $M scripts(->)_beta M'$, allora $Gamma tack M' : A$.
+]
+
+La proprietà di _subject reduction_ afferma che la computazione _preserva i tipi_. Infatti, se un programma possiede tipo $A$, allora anche ogni programma ottenuto da esso mediante un passo di calcolo ha tipo $A$ e, per induzione sul numero di passi, lo stesso vale per ogni programma ottenuto mediante un numero arbitrario di passi di calcolo. Ad esempio, se un programma di tipo $"Nat"$ termina, il suo risultato è un numero naturale, e non, ad esempio, una funzione. Il teorema può essere dimostrato per induzione sulla derivazione di $M scripts(->)_beta M'$, distinguendo i casi in base all'ultima regola utilizzata nella derivazione di $Gamma tack M : A$. Il caso più interessante è quello in cui $M = (lambda x^B. P) Q$ ed $M' = P[Q slash x]$. Infatti, siccome $Gamma tack M : A$, l'ultima regola applicata deve essere (app), preceduta da (abs) sul termine $lambda x^B. P$, per cui deve valere che $Gamma, x : B tack P : A$ e $Gamma tack Q : B$. Per il lemma di sostituzione, segue che $Gamma tack P[Q slash x] : A$. Gli altri casi sono simili, e richiedono di considerare anche le regole di congruenza ($"cong"_1$), ($"cong"_2$) e ($xi$). In generale, si sfrutta la regola di tipaggio necessaria a tipare correttamente $M'$, a partire dal tipaggio richiesto per $M$.
+
+#teorema(title: [Progress])[
+  Se $tack M : A$, ossia se $M$ è un termine chiuso e ben tipato, allora $M$ è un _valore_, ossia un'astrazione, una coppia oppure il termine $*$, oppure esiste un termine $M'$ tale che $M scripts(->)_beta M'$.
+]
+
+La proprietà di _progress_ afferma che un programma ben tipato non può mai rimanere _bloccato_ in uno stato privo di significato. Infatti, o la computazione è terminata, e allora il risultato è un valore, oppure è possibile eseguire un ulteriore passo di calcolo. Ad esempio, il termine $pi_1 (lambda x. x)$, che tenta di proiettare una funzione come se fosse una coppia, è in forma normale ma non è un valore. Infatti, questo si tratta di un errore di esecuzione, come avverrebbe in un linguaggio di programmazione reale, per cui la proprietà di _progress_ garantisce che tali termini non siano tipabili. Combinando le due proprietà precedenti si ottiene la _sicurezza_, o _safety_, del sistema di tipi. Per la _subject reduction_, ogni passo di calcolo a partire da un termine ben tipato produce un termine ben tipato e, per la proprietà di _progress_, un termine ben tipato non è mai bloccato. Dunque, nessuna computazione che parte da un termine ben tipato può mai incontrare un errore di esecuzione.
+
+#teorema(title: [Unicità dei tipi])[
+  Se $Gamma tack M : A$ e $Gamma tack M : B$, allora $A = B$.
+]
+
+L'unicità dei tipi afferma che, fissato il contesto, ogni termine ben tipato ha un unico tipo. Si dimostra facilmente per induzione su $M$, sfruttando il fatto, osservato in precedenza, che esiste esattamente una regola di tipaggio per ogni costrutto dei termini. In ogni passo della derivazione, quindi, il tipo della conclusione è determinato univocamente dai tipi delle premesse.
+
+Ricordiamo, inoltre, che un termine è _fortemente normalizzabile_ se _ogni_ sequenza di riduzioni che parte da esso è finita, ossia se ogni computazione che parte da esso termina, indipendentemente dall'ordine con cui vengono ridotti i _redex_. Abbiamo osservato che il $lambda$-calcolo non tipato non gode di questa proprietà, poiché il termine $Omega$ dà origine ad una computazione infinita. Il risultato principale di questa sezione è che, nel $lambda$-calcolo semplicemente tipato, questo non può accadere.
+
+#teorema(title: [Normalizzazione forte, Nederpelt, 1973])[
+  Se $Gamma tack M : A$, allora $M$ è fortemente normalizzabile.
+]
+
+In altre parole, ogni sequenza di riduzioni che parte da un termine ben tipato termina in una forma normale, ossia in un termine che non contiene alcun _redex_ e che, quindi, non può essere ulteriormente ridotto. In sintesi, tutte le computazioni di termini ben tipati nel $lambda$-calcolo semplicemente tipato terminano. Prima di dimostrare il teorema, discutiamone le conseguenze, che sono molto rilevanti.
+
+_Equivalenza delle strategie._ Il teorema di Church-Rosser, che vale anche nel $lambda$-calcolo semplicemente tipato, garantisce che, se un termine ammette una forma normale, essa è unica, ma non garantisce che essa esista, in quanto la confluenza non implica la terminazione. Nel caso non tipato, infatti, una strategia di riduzione può divergere anche su un termine che ammette una forma normale. Ad esempio, il termine $(lambda x. y) Omega$ si riduce in un passo alla forma normale $y$, ma una strategia che riduce sempre il _redex_ $Omega$ non termina mai. La normalizzazione forte elimina questo problema poiché, combinata con il teorema di Church-Rosser, essa garantisce che _qualunque_ strategia di riduzione termina, e restituisce sempre la stessa forma normale. Nel $lambda$-calcolo semplicemente tipato, dunque, tutte le strategie di valutazione sono equivalenti, e la scelta di una strategia (ad esempio, _call-by-name_ oppure _call-by-value_) influisce soltanto sull'efficienza del calcolo, e non sul suo risultato. Ne segue, inoltre, che la $beta$-equivalenza tra termini ben tipati è decidibile, poiché per stabilire se $M scripts(=)_beta N$, è sufficiente ridurre entrambi i termini in forma normale, con una strategia qualunque, e confrontare le due forme normali a meno di $alpha$-equivalenza.
+
+_Perdita della Turing-completezza._ La normalizzazione forte, tuttavia, ha un prezzo. Infatti, il $lambda$-calcolo semplicemente tipato _non è Turing-Completo_. Infatti, in un linguaggio Turing-Completo devono essere esprimibili anche le computazioni che non terminano, come quella di una _Macchina di Turing_ che esegue un ciclo infinito, mentre nel $lambda$-calcolo semplicemente tipato ogni computazione termina. In particolare, i combinatori di punto fisso, come il combinatore $Y$, non sono tipabili, per cui non è possibile esprimere la ricorsione generale. Il linguaggio del $lambda$-calcolo semplicemente tipato, quindi, può esprimere soltanto un sottoinsieme stretto delle funzioni _totali_, ovvero le funzioni che terminano su ogni _input_. Per recuperare la Turing-Completezza, è necessario aggiungere al linguaggio un operatore di punto fisso, come avviene nel $lambda$-calcolo #pb[Pcf], perdendo però la normalizzazione forte.
+
+_Conseguenze per la corrispondenza di Curry-Howard._ Ricordiamo che, attraverso la _corrispondenza di Curry-Howard_, i termini ben tipati del $lambda$-calcolo semplicemente tipato corrispondono alle dimostrazioni in deduzione naturale per la logica minimale, e i tipi corrispondono alle formule. In questa corrispondenza, la $beta$-riduzione ha un significato logico preciso. Infatti, un _redex_ del tipo $(lambda x^A. M) N$ corrisponde ad una derivazione in cui la regola $-> I$ è immediatamente seguita dalla regola $-> E$, ovvero ad una _deviazione_ inutile nella dimostrazione, in cui si dimostra un'implicazione al solo scopo di utilizzarla subito dopo. Ridurre il _redex_, quindi, significa eliminare questa deviazione, innestando direttamente la derivazione dell'argomento al posto dell'ipotesi scaricata. La normalizzazione forte afferma, dunque, che ogni dimostrazione in logica minimale può essere trasformata in una dimostrazione in _forma normale_, priva di deviazioni, e che il processo di semplificazione termina sempre. Questo ha due conseguenze importanti:
+- _consistenza della logica_: se esistesse una dimostrazione del falso, ovvero un termine chiuso di tipo $bot$, essa ammetterebbe anche una forma normale, ma si verifica facilmente, mediante la proprietà di _progress_, che un $lambda$-termine chiuso in forma normale è un valore, ovvero un'astrazione, una coppia oppure un valore $*$, nessuno dei quali ha tipo $bot$. Dunque, non esiste alcuna dimostrazione del falso, e la logica minimale è, necessariamente, consistente.
+- _quali programmi sono dimostrazioni_: siccome ogni dimostrazione corrisponde ad un programma che termina, mediante le dimostrazioni in logica minimale è possibile rappresentare soltanto programmi che terminano, ossia funzioni _totali_. I programmi che possono non terminare, invece, come quelli che impiegano la ricorsione generale, non ammettono alcuna controparte logica. Si osservi, tuttavia, che non si tratta di un difetto della _corrispondenza di Curry-Howard_, ma di una necessità formale. Infatti, un combinatore di punto fisso dovrebbe avere tipo $(A -> A) -> A$ nel $lambda$-calcolo semplicemente tipato, per ogni possibile tipo $A$, che, applicato all'identità $lambda x^A. x : A -> A$, produrrebbe un $lambda$-termine di tipo $A$, ovvero una _dimostrazione_ di qualunque formula $A$, per la _corrispondenza di Curry-Howard_. Una logica in cui ogni formula è dimostrabile, però, è inconsistente, per cui i combinatori di punto fisso non ammettono una controparte logica diretta. In altre parole, dal punto di vista logico, la ricorsione generale corrisponderebbe logicamente ad un ragionamento circolare, che è necessariamente inconsistente per la logica minimale, in quanto permette di dimostrare qualunque formula.
+
+In conclusione, la _corrispondenza di Curry-Howard_ associa le dimostrazioni ai programmi _totali_, e la normalizzazione forte è la proprietà che garantisce che il calcolo dei programmi corrisponda alla _semplificazione_ delle dimostrazioni. La dimostrazione per il teorema di normalizzazione forte che studieremo è _minimalista_, nel senso che sfrutta soltanto un'opportuna induzione, e per questo motivo è relativamente semplice. Esiste, invece, una tecnica dovuta a Tait e Girard, detta dei _candidati di riducibilità_, che è molto più potente, poiché si estende a sistemi di tipi molto più ricchi come il sistema $F$, ma è anche molto più complessa, e per questo non la vedremo. Per semplicità, dimostriamo il teorema di normalizzazione forte per il solo frammento del $lambda$-calcolo semplicemente tipato con il solo tipo funzionale $->$ e la sola relazione di $beta$-riduzione, siccome l'estensione ai tipi $times$ e $1$, e alla relazione di $beta eta$-riduzione segue analogamente. Fissiamo, innanzitutto, la notazione.
+
+#definizione[
+  - Indichiamo con $#pb[Sn]$ l'insieme dei termini _fortemente normalizzabili_, ossia dei termini $t$ tali per cui non esiste alcuna sequenza infinita di riduzioni $t scripts(->)_beta t_1 scripts(->)_beta t_2 scripts(->)_beta dots$
+  - Per ogni $t in #pb[Sn]$, indichiamo con $h(t)$ l'_altezza_ di $t$, ossia la lunghezza della più lunga sequenza di riduzioni che parte da $t$
+  - Indichiamo con $|t|$ la _taglia_ di un termine $t$, ossia il numero di simboli che lo compongono
+  - Indichiamo con $|alpha|$ la _taglia_ di un tipo $alpha$, definita come $|iota| = 1$ e $|alpha -> beta| = |alpha| + |beta| + 1$
+]
+
+Si noti che l'altezza $h(t)$ è ben definita per ogni termine $t in #pb[Sn]$ poiché, siccome ogni termine contiene un numero finito di _redex_, da ogni termine si diramano un numero finito di riduzioni in un passo, e l'albero di tutte le possibili riduzioni che partono da $t$ è un albero a diramazione finita privo di rami infiniti, per cui è finito. Questa proprietà segue come conseguenza del _lemma di König_. L'altezza $h(t)$, dunque, coincide con l'altezza di questo albero. Si faccia attenzione a non confondere un termine fortemente normalizzabile con un termine che _ammette_ una forma normale, poiché la seconda è la definizione di termine debolmente normalizzabile, mentre per la normalizzazione forte è richiesto che _tutte_ le sequenze di riduzioni terminino.
+
+_L'idea della dimostrazione._ Vorremmo dimostrare che $t in #pb[Sn]$, per ogni termine $t$ ben tipato, per induzione sulla struttura di $t$. I casi $t = x$ e $t = lambda x. v$ sono banali, poiché una variabile è in forma normale, e le riduzioni di $lambda x. v$ sono esattamente le riduzioni di $v$. L'unico caso non banale è quello dell'applicazione $t = u v$, siccome un'eventuale ipotesi induttiva garantisce che $u$ e $v$ siano fortemente normalizzabili, ma questo non basta, poiché applicando $u$ a $v$ si possono creare nuovi _redex_. Infatti, se $u$ si riduce ad un'astrazione $lambda x. u_1$, il termine $u v$ si riduce a $u_1 [v slash x]$, che non è un sottotermine di $t$, e può essere anche molto più grande di $t$, poiché $v$ viene copiato in tutte le occorrenze di $x$. Per gestire questo caso, abbiamo bisogno di un lemma di sostituzione per la normalizzazione, per il quale, se $u_1$ e $v$ sono fortemente normalizzabili, allora anche $u_1 [v slash x]$ è fortemente normalizzabile. La difficoltà, a sua volta, è che anche la sostituzione può creare nuovi _redex_. Infatti, se $u_1$ contiene un sottotermine $x w$ e $v$ è un'astrazione, allora $u_1 [v slash x]$ contiene il nuovo _redex_ $x[v slash x] (w[v slash x]) = v (w[v slash x])$. L'osservazione chiave, che rende possibile la dimostrazione, è che i _redex_ creati per sostituzione, in questo modo, coinvolgono tipi _sempre più piccoli_. Infatti, se $x$ ha tipo $alpha = alpha_1 -> alpha_2$, allora il suo argomento $w$ ha tipo $alpha_1$ e, se $v = lambda y. s$, la variabile legata $y$ ha tipo $alpha_1$. Il nuovo _redex_ $v(w[v slash x])$ ha, dunque, tipo $alpha_2$, e la sua contrazione, che restituisce $s[w[v slash x] slash y]$, consiste nel sostituire una variabile di tipo $alpha_1$, dunque, entrambi i tipi hanno taglia strettamente minore di $alpha=alpha_1->alpha_2$. È per questo motivo che la dimostrazione procede per induzione, prima di tutto, sulla taglia dei tipi.
+
+Raccogliamo, innanzitutto, alcuni fatti elementari sui $lambda$-termini fortemente normalizzabili, che seguono direttamente dalle definizioni.
+
+#lemma[Valgono le seguenti proprietà di normalizzazione forte:
+  + Un termine $t$ appartiene a $#pb[Sn]$ se e solo se ogni termine $t'$ tale che $t scripts(->)_beta t'$ appartiene a $#pb[Sn]$. Inoltre, in tal caso vale $h(t') < h(t)$.
+  + Se $t in #pb[Sn]$, allora ogni sottotermine $s$ di $t$ appartiene a $#pb[Sn]$, e vale $h(s) <= h(t)$.
+  + Vale che $lambda y. t in #pb[Sn]$ se e solo se $t in #pb[Sn]$, e in tal caso $h(lambda y. t) = h(t)$.
+  + Vale che $y t_1 dots t_n in #pb[Sn]$ se e solo se $t_1, dots, t_n in #pb[Sn]$.
+]
+
+Il punto ($i$) afferma che un termine è fortemente normalizzabile se e solo se lo sono tutti i termini che si ottengono da esso con un passo di riduzione, e sarà il modo principale con cui dimostreremo che un termine appartiene a $#pb[Sn]$. Il punto ($i i$) vale poiché ogni sequenza di riduzioni di un sottotermine è anche una sequenza di riduzioni del termine che lo contiene. Il punto ($i v$) vale poiché, in un termine della forma $y t_1 dots t_n$, non esiste alcun _redex_ in testa, essendo $y$ una variabile, per ipotesi. Le riduzioni di $y t_1 dots t_n$ avvengono, quindi, all'interno dei singoli argomenti $t_i$, indipendentemente l'uno dall'altro. Ci servirà, inoltre, il seguente risultato.
+
+#lemma(title: [Espansione di testa])[
+  Se $w in #pb[Sn]$ e $s[w slash y] t_1 dots t_n in #pb[Sn]$, allora $(lambda y. s) w t_1 dots t_n in #pb[Sn]$.
+]
+
+#dimostrazione[
+  Si osservi, innanzitutto, che $s, t_1, dots, t_n in #pb[Sn]$, poiché ogni riduzione di $s$ induce una riduzione di $s[w slash y]$, e i termini $t_i$ sono sottotermini di un termine fortemente normalizzabile. Procediamo per induzione su $h(s) + h(w) + sum_i h(t_i)$, mostrando che ogni termine ottenuto da $(lambda y. s) w t_1 dots t_n$ con un passo di riduzione appartiene a $#pb[Sn]$. Se si riduce il _redex_ di testa, si ottiene $s[w slash y] t_1 dots t_n$, che appartiene a $#pb[Sn]$ per ipotesi. Altrimenti, si riduce un _redex_ all'interno di $s$, di $w$ o di uno dei $t_i$. In ciascuno di questi casi, il termine ottenuto ha ancora la forma $(lambda y. s') w' t'_1 dots t'_n$ e soddisfa ancora le ipotesi del lemma. Ad esempio, se $w scripts(->)_beta w'$, allora $w' in #pb[Sn]$, e $s[w' slash y] t_1 dots t_n$ si ottiene da $s[w slash y] t_1 dots t_n$ con zero o più passi di riduzione, per cui appartiene a $#pb[Sn]$. Siccome la quantità $h(s) + h(w) + sum_i h(t_i)$ è diminuita, possiamo applicare l'ipotesi induttiva, per cui possiamo concludere che $(lambda y. s) w t_1 dots t_n in #pb[Sn]$.
+]
+
+Si noti che l'ipotesi $w in #pb[Sn]$ è necessaria. Infatti, se $y$ non compare in $s$, il termine $w$ scompare in $s[w slash y]$, e potrebbe, ad esempio, essere $Omega$, che non ammette normalizzazione forte nel $lambda$-calcolo semplicemente tipato, siccome esiste una strategia di riduzione non terminante per un tale $lambda$-termine. Siamo, ora, pronti a dimostrare i due lemmi principali. Il primo gestisce il caso dell'applicazione, assumendo che la sostituzione preservi la normalizzazione forte per un tipo fissato.
+
+#lemma(title: [Applicazione])[
+  Sia $alpha$ un tipo tale per cui, per ogni $s, v in #pb[Sn]$ con $v$ di tipo $alpha$ e $y$ una variabile di tipo $alpha$, valga $s[v slash y] in #pb[Sn]$. Allora, per ogni $u, v in #pb[Sn]$ con $u : alpha -> beta$ e $v : alpha$, vale che $u v in #pb[Sn]$.
+]
+
+#dimostrazione[
+  Procediamo per induzione su $h(u) + h(v)$, mostrando che ogni termine ottenuto da $u v$ con un passo di riduzione appartiene a $#pb[Sn]$. I casi possibili sono tre:
+  - $u v scripts(->)_beta u' v$, con la regola $u scripts(->)_beta u'$. Allora $u' in #pb[Sn]$ con $h(u') < h(u)$, e $u' v in #pb[Sn]$ per ipotesi induttiva
+  - $u v scripts(->)_beta u v'$, con la regola $v scripts(->)_beta v'$. Analogamente, $u v' in #pb[Sn]$ per ipotesi induttiva
+  - $u = lambda y. s$, e $u v scripts(->)_beta s[v slash y]$, ossia si riduce il _redex_ creato dall'applicazione. Allora $s in #pb[Sn]$, poiché $u in #pb[Sn]$, e $y$ ha tipo $alpha$, per cui $s[v slash y] in #pb[Sn]$ per l'ipotesi del lemma
+  Dunque tutti i termini ottenuti da $u v$ con un passo di riduzione appartengono a $#pb[Sn]$, per cui $u v in #pb[Sn]$.
+]
+
+#lemma(title: [Sostituzione])[
+  Siano $t, v in #pb[Sn]$ tali che $Gamma, x : alpha tack t : beta$ e $Gamma tack v : alpha$. Allora $t[v slash x] in #pb[Sn]$.
+]
+
+#dimostrazione[
+  Procediamo per induzione sulla tripla $(|alpha|, h(t), |t|)$, ordinata lessicograficamente. Più semplicemente, l'ipotesi induttiva può essere applicata se la taglia del tipo diminuisce, oppure se la taglia del tipo è la stessa e l'altezza di $t$ diminuisce, oppure se taglia del tipo e altezza sono le stesse, e la taglia di $t$ diminuisce. Per brevità, scriviamo $t^* = t[v slash x]$ per ogni termine $t$. Ogni $lambda$-termine ha una delle seguenti forme: un'astrazione $lambda y. t_1$, un'applicazione $y t_1 dots t_n$ di una variabile ad $n >= 0$ argomenti, oppure un'applicazione $(lambda y. s) w t_1 dots t_n$ di un _redex_ ad $n >= 0$ argomenti. Distinguiamo i casi, separando l'applicazione di una variabile in base al fatto che essa sia $x$ oppure no.
+
+  _Caso $t = lambda y. t_1$._ Allora $t^* = lambda y. t_1^*$. Vale $h(t_1) = h(t)$ e $|t_1| < |t|$, per cui $t_1^* in #pb[Sn]$ per ipotesi induttiva, e quindi $t^* in #pb[Sn]$.
+
+  _Caso $t = y t_1 dots t_n$, con $y != x$._ Allora $t^* = y t_1^* dots t_n^*$. Per ogni $i$, vale $h(t_i) <= h(t)$ e $|t_i| < |t|$, per cui $t_i^* in #pb[Sn]$ per ipotesi induttiva, e quindi $t^* in #pb[Sn]$.
+
+  _Caso $t = (lambda y. s) w t_1 dots t_n$._ Allora $t^* = (lambda y. s^*) w^* t_1^* dots t_n^*$. Per il lemma di espansione di testa, è sufficiente mostrare che $w^* in #pb[Sn]$ e che $s^* [w^* slash y] t_1^* dots t_n^* in #pb[Sn]$. Il primo fatto segue dall'ipotesi induttiva, poiché $w$ è un sottotermine di $t$, per cui $h(w) <= h(t)$ e $|w| < |t|$. Per il secondo fatto, si osservi che $s^* [w^* slash y] t_1^* dots t_n^* = (s[w slash y] t_1 dots t_n)^*$, e che il termine $s[w slash y] t_1 dots t_n$ si ottiene da $t$ riducendo il _redex_ di testa, per cui ha altezza strettamente minore di $h(t)$. Dunque, la tesi segue dall'ipotesi induttiva.
+
+  _Caso $t = x t_1 dots t_n$._ Questo è il caso cruciale, in cui la sostituzione può creare nuovi _redex_. Se $n = 0$, allora $t^* = v in #pb[Sn]$. Sia, quindi, $n >= 1$. Siccome $x$ è applicata ad almeno un argomento, il suo tipo deve essere funzionale, ossia $alpha = alpha_1 -> alpha'$, dove $t_1$ ha tipo $alpha_1$. Vale $t^* = v t_1^* t_2^* dots t_n^*$ e, come nei casi precedenti, $t_i^* in #pb[Sn]$ per ogni $i$, per ipotesi induttiva. Se $v$ è un'astrazione, il termine $v t_1^*$ è un nuovo _redex_, che non era presente in $t$. Mostriamo, innanzitutto, che $v t_1^* in #pb[Sn]$. Siccome $|alpha_1| < |alpha|$, per ipotesi induttiva la sostituzione preserva la normalizzazione forte per le variabili di tipo $alpha_1$, per cui, per il lemma di applicazione, applicato con il tipo $alpha_1 -> alpha'$, vale $v t_1^* in #pb[Sn]$. Se $n = 1$, abbiamo concluso. Altrimenti, per gestire i restanti argomenti, rendiamo _silente_ il calcolo del termine $v t_1^*$, sostituendolo con una variabile $z$ fresca, di tipo $alpha'$. Possiamo, infatti, scrivere
+  $
+    t^* = (z t_2^* dots t_n^*)[v t_1^* slash z]
+  $
+  Il termine $z t_2^* dots t_n^*$ appartiene a $#pb[Sn]$, poiché è un'applicazione di una variabile ad argomenti fortemente normalizzabili, e il termine $v t_1^*$, che sostituisce $z$, appartiene a $#pb[Sn]$ ed ha tipo $alpha'$. Siccome $|alpha'| < |alpha|$, per ipotesi induttiva segue che $t^* in #pb[Sn]$. Più chiaramente, si applica, per ipotesi induttiva, il lemma di sostituzione dove $t=z t^*_2 dots t^*_n$, $v=v t_1$ e $x=z$. Siccome, per ipotesi induttiva sulla lunghezza di $t^*_i$ vale che $z t^*_2 dots t^*_n in$ #pb[Sn], e $|alpha'|<|alpha|$, per ipotesi induttiva sulla taglia del tipo $alpha'$ possiamo concludere che $t^* = (z t_2^* dots t_n^*)[v t_1^* slash z] in$ #pb[Sn].
+]
+
+Si osservi come l'induzione sul tipo sia essenziale nell'ultimo caso. Infatti, i termini sostituiti, ovvero $v t_1^*$ e il parametro di $v$, hanno tipi $alpha'$ ed $alpha_1$ strettamente più piccoli di $alpha$, ma possono avere altezza e taglia arbitrariamente grandi, per cui un'induzione sulla sola altezza o sulla sola taglia dei termini non sarebbe sufficiente. Possiamo, finalmente, dimostrare il teorema di normalizzazione forte.
+
+#dimostrazione(title: [Dimostrazione (Teorema di normalizzazione forte)])[
+  Dimostriamo che, se $Gamma tack t : A$, allora $t in #pb[Sn]$, per induzione sulla struttura di $t$.
+  - Se $t = x$, allora $t$ è in forma normale, per cui $t in #pb[Sn]$.
+  - Se $t = lambda x. v$, allora $v in #pb[Sn]$ per ipotesi induttiva, e quindi $t in #pb[Sn]$.
+  - Se $t = u v$, con $u : alpha -> beta$ e $v : alpha$, allora $u, v in #pb[Sn]$ per ipotesi induttiva. Per il lemma di sostituzione, la sostituzione preserva la normalizzazione forte per le variabili di _qualunque_ tipo, e in particolare di tipo $alpha$. Dunque, per il lemma di applicazione, $u v in #pb[Sn]$. Ricordando la dimostrazione del lemma di applicazione, si osservi che ciò significa esattamente che, se $u v scripts(->)_beta u' v$ oppure $u v scripts(->)_beta u v'$, la tesi segue per induzione, mentre se $u = lambda x. u_1$ e $u v scripts(->)_beta u_1 [v slash x]$, allora $u_1 [v slash x] in #pb[Sn]$ per il lemma di sostituzione.
+]
+
+Concludiamo, in ultima istanza, che ogni termine del $lambda$-calcolo semplicemente tipato ammette soltanto computazioni che terminano. Infine, il $lambda$-calcolo semplicemente tipato è il più semplice dei sistemi di tipi per il $lambda$-calcolo, ed ha, di conseguenza, una potenza espressiva minima. Il logico olandese Henk Barendregt ha mostrato che molti dei sistemi di tipi più importanti possono essere organizzati in modo sistematico, come vertici di un cubo, detto _$lambda$-cubo di Barendregt_. L'idea è che, nel $lambda$-calcolo semplicemente tipato, i termini possono dipendere soltanto da altri termini. Ad esempio, una funzione $lambda x^A. M$ riceve un termine e restituisce un termine. A partire dal $lambda$-calcolo semplicemente tipato $lambda_(->)$, però, è possibile aggiungere tre ulteriori forme di _dipendenza_, ognuna delle quali corrisponde ad uno spigolo del cubo uscente dal vertice $lambda_->$:
+- _termini che dipendono da tipi_, ossia il _polimorfismo_ (spigolo verticale). Ad esempio, l'identità polimorfa $Lambda X. lambda x^X. x$ riceve un tipo $X$ e restituisce la funzione identità su $X$, ed ha tipo $forall X. X -> X$
+- _tipi che dipendono da tipi_, ossia gli _operatori di tipo_ (spigolo in profondità). Ad esempio, $"List"$ è una funzione che riceve un tipo $X$ e restituisce il tipo $"List"(X)$ delle liste di elementi di tipo $X$
+- _tipi che dipendono da termini_, ossia i _tipi dipendenti_ (spigolo orizzontale). Ad esempio, il tipo $C(k)$ dei circuiti con $k$ ingressi dipende dal numero naturale $k$, che è un termine. Dunque, una funzione che trasforma un circuito di arietà $k$ in un circuito della stessa arietà ha tipo $C(k) -> C(k)$, ed è parametrica nel termine $k$
+
+#align(center, cetz.canvas(length: 1cm, {
+  import cetz.draw: *
+  set-style(stroke: line-thickness + black)
+  let (dx, dy) = (1.8, 1.3)
+  let v = (
+    sta: (0, 0), p: (4, 0), due: (0, 4), p2: (4, 4),
+    w: (dx, dy), pw: (4 + dx, dy), fw: (dx, 4 + dy), cc: (4 + dx, 4 + dy),
+  )
+  // spigoli nascosti (tratteggiati)
+  for (a, b) in (("sta", "w"), ("w", "pw"), ("w", "fw")) {
+    line(v.at(a), v.at(b), stroke: (dash: "dashed"))
+  }
+  // spigoli visibili
+  for (a, b) in (("sta", "p"), ("sta", "due"), ("p", "p2"), ("due", "p2"),
+                 ("p", "pw"), ("due", "fw"), ("p2", "cc"), ("fw", "cc"), ("pw", "cc")) {
+    line(v.at(a), v.at(b))
+  }
+  for (k, c) in v { circle(c, radius: 0.06, fill: black) }
+  content(v.sta, $lambda_->$, anchor: "north-east", padding: 0.12)
+  content(v.p, $lambda P$, anchor: "north-west", padding: 0.12)
+  content(v.due, $lambda 2$, anchor: "south-east", padding: 0.12)
+  content(v.p2, $lambda P 2$, anchor: "north-west", padding: 0.12)
+  content(v.w, $lambda underline(omega)$, anchor: "south-east", padding: 0.12)
+  content(v.pw, $lambda P underline(omega)$, anchor: "west", padding: 0.15)
+  content(v.fw, $lambda omega$, anchor: "south-east", padding: 0.12)
+  content(v.cc, $lambda C$, anchor: "south-west", padding: 0.12)
+}))
+
+Descriviamo i vertici del cubo.
+- $lambda_->$ (vertice in basso a sinistra, sul fronte) è il _$lambda$-calcolo semplicemente tipato_, in cui i termini dipendono soltanto da termini. Attraverso la _corrispondenza di Curry-Howard_, corrisponde alla logica minimale proposizionale. È il sistema con la potenza espressiva minima, ed è il punto di partenza di tutti gli altri
+- $lambda 2$ (in alto a sinistra, sul fronte) è il _sistema $F$_ di Girard e Reynolds, ossia il $lambda$-calcolo _polimorfo_, in cui i termini possono dipendere anche dai tipi. Corrisponde alla logica proposizionale del secondo ordine, in cui è possibile quantificare sulle proposizioni, come in $forall X. X -> X$
+- $lambda P$ (in basso a destra, sul fronte) è il $lambda$-calcolo con _tipi dipendenti_, in cui i tipi possono dipendere dai termini, ossia i tipi sono _parametrici_. È noto anche come #pb[Lf] (_Logical Framework_), e corrisponde alla logica dei predicati minimale, in cui i predicati $P(x)$ sono tipi che dipendono dal termine $x$
+- $lambda P 2$ (in alto a destra, sul fronte) combina il polimorfismo di $lambda 2$ con i tipi dipendenti di $lambda P$, e corrisponde alla logica dei predicati del secondo ordine
+- $lambda underline(omega)$ (in basso a sinistra, sul retro) estende il $lambda$-calcolo semplicemente tipato con gli _operatori di tipo_, ossia con funzioni che trasformano tipi in tipi
+- $lambda P underline(omega)$ (in basso a destra, sul retro) combina gli operatori di tipo con i tipi dipendenti
+- $lambda omega$ (in alto a sinistra, sul retro) è il _sistema $F_omega$_, che combina il polimorfismo del sistema $F$ con gli operatori di tipo, e corrisponde alla logica di ordine superiore
+- $lambda C$ (in alto a destra, sul retro) è il _calcolo delle costruzioni_, ovvero #pb[Cc], _Calculus of Constructions_, di Coquand e Huet, che contiene tutte e tre le dipendenze aggiuntive. È il sistema più espressivo del cubo, e una sua estensione, il _calcolo delle costruzioni induttive_, è alla base dell'assistente alla dimostrazione Coq
+
+Si noti che tutti i sistemi del $lambda$-cubo godono della normalizzazione forte, per cui nessuno di essi è Turing-Completo. Dunque, i sistemi più espressivi possono rappresentare un numero molto più grande di funzioni totali, ma non le computazioni che non terminano. Ad esempio, il sistema $F$ rappresenta tutte le funzioni la cui totalità è dimostrabile nell'aritmetica del secondo ordine. Questo è coerente con la _corrispondenza di Curry-Howard_, dimostrabile per ciascuno di questi sistemi logici, siccome ogni vertice del cubo corrisponde ad una logica consistente, e ogni dimostrazione corrisponde ad un programma che termina.
