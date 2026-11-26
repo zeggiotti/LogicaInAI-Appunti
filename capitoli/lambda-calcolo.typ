@@ -153,7 +153,7 @@ $
 $
 per cui il termine $lambda x. lambda y. lambda z. x y z$, applicato a $B$, $P$ e $Q$, si comporta esattamente come "if $B$ then $P$ else $Q$". In modo analogo, si possono codificare i connettivi booleani. Ad esempio, il termine $lambda a b. a b "false"$ codifica la congiunzione $a and b$.
 
-_Numeri Naturali._ Per codificare i numeri naturali, dati due termini $F$ e $M$ definiamo l'iterazione $F^n (M)$ per ricorsione su $n in NN$:
+_Numeri Naturali._ In letteratura esistono due approcci principali alla codifica dei numeri naturali nel $lambda$-calcolo: la codifica di Church e la codifica di Scott. Cominciamo dalla prima. Dati due termini $F$ e $M$, definiamo l'iterazione $F^n (M)$ per ricorsione su $n in NN$:
 $
   F^0 (M) = M, #h(4em) F^(n + 1) (M) = F(F^n (M))
 $
@@ -167,11 +167,31 @@ ossia $F^n (M) = F(F(dots F(M) dots))$, con $n$ applicazioni della funzione $F$.
   dove $f^n = f compose dots compose f$, con $n$ occorrenze della funzione $f$.
 ]
 
-In altre parole, il numero $n$ è codificato come la funzione che, data una funzione $f$ e un punto di partenza $x$, applica $f$ ad $x$ esattamente $n$ volte: $overline(0) = lambda f x. x$, $overline(1) = lambda f x. f x$, $overline(2) = lambda f x. f(f x)$, e così via. Si noti che $overline(0)$ coincide con $"false"$, dunque, in un'interpretazione pratica di un termine, bisogna sapere in anticipo se esso va inteso come booleano o come numerale. Su questa codifica, le operazioni aritmetiche diventano semplici termini. Ad esempio, l'addizione è codificata da
+In altre parole, il numero $n$ è codificato come la funzione che, data una funzione $f$ e un punto di partenza $x$, applica $f$ ad $x$ esattamente $n$ volte: $overline(0) = lambda f x. x$, $overline(1) = lambda f x. f x$, $overline(2) = lambda f x. f(f x)$, e così via. Equivalentemente, i numerali di Church possono essere generati a partire dallo zero e dal successore:
+$
+  overline(0) := lambda s. lambda z. z #h(4em) overline(S) := lambda n. lambda s. lambda z. s(n s z)
+$
+Il successore $overline(S)$, dato un numerale $n$, restituisce il numerale che applica $s$ una volta in più rispetto ad $n$. Ad esempio, $overline(S)(overline(0)) scripts(->>)_beta lambda s. lambda z. s z = overline(1)$. Si osservi che il numerale $overline(n)$ è esattamente l'_iteratore_ $n$ volte di una funzione: per questo motivo, con i numerali di Church la _ricorsione primitiva_ è codificata completamente. Si noti, inoltre, che $overline(0)$ coincide con $"false"$, dunque, in un'interpretazione pratica di un termine, bisogna sapere in anticipo se esso va inteso come booleano o come numerale. Su questa codifica, le operazioni aritmetiche diventano semplici termini. Ad esempio, l'addizione è codificata da
 $
   overline(+) := lambda x. lambda y. lambda p. lambda q. x p (y p q)
 $
-e si verifica che $overline(+) thin overline(n) thin overline(m) scripts(->>)_beta overline(n + m)$. Intuitivamente, $y p q$ applica $p$ a $q$ esattamente $m$ volte, e $x p (dots)$ applica $p$ al risultato altre $n$ volte, per un totale di $n + m$ applicazioni. Più in generale, si dice che un termine $M$ _rappresenta_ una funzione $f : NN^k -> NN$ se, per ogni $n_1, dots, n_k in NN$, vale $M overline(n_1) dots overline(n_k) scripts(->>)_beta overline(f(n_1, dots, n_k))$.
+e si verifica che $overline(+) thin overline(n) thin overline(m) scripts(->>)_beta overline(n + m)$. Intuitivamente, $y p q$ applica $p$ a $q$ esattamente $m$ volte, e $x p (dots)$ applica $p$ al risultato altre $n$ volte, per un totale di $n + m$ applicazioni. Più in generale, si dice che un termine $M$ _rappresenta_ una funzione $f : NN^k -> NN$ se, per ogni $n_1, dots, n_k in NN$, vale $M overline(n_1) dots overline(n_k) scripts(->>)_beta overline(f(n_1, dots, n_k))$. Una possibile seconda codifica dei numeri naturali è la _codifica di Scott_, in cui la costante zero e il successore sono definiti come
+$
+  overline(0) := lambda s. lambda z. z #h(4em) overline(S) := lambda n. lambda s. lambda z. s n
+$
+per cui $overline(1) := overline(S)(overline(0))$, $overline(2) := overline(S)(overline(S)(overline(0)))$, e così via. A differenza dei numerali di Church, un numerale di Scott non itera la funzione $s$, ma la applica una sola volta al _predecessore_, ovvero $overline(S)(overline(n)) scripts(->>)_beta lambda s. lambda z. s thin overline(n)$. In altre parole, un numerale di Scott si comporta come un costrutto di _pattern matching_, per cui se il parametro $z$ è zero, restituisce $z$, altrimenti passa alla funzione $s$ il proprio predecessore. Per questo motivo, la ricorsione non è codificata direttamente nei numerali, ma deve essere ottenuta con un combinatore di punto fisso. Indichiamo con $"Fix"$ il combinatore $Y$ definito in precedenza:
+$
+  "Fix" := lambda f. (lambda x. f(x x))(lambda x. f(x x)), #h(3em) "Fix" thin g scripts(=)_beta g("Fix" thin g)
+$
+Un _operatore di ricorsione_ può allora essere definito come
+$
+  "Rec" := "Fix" (lambda r. lambda n. lambda f. lambda v. n (lambda m. f (r thin m thin f thin v) thin m) thin v)
+$
+e si verifica che soddisfa le equazioni della ricorsione primitiva:
+$
+  "Rec" thin overline(0) thin f thin v scripts(=)_beta v #h(4em) "Rec" thin overline(S)(overline(n)) thin f thin v scripts(=)_beta f("Rec" thin overline(n) thin f thin v) thin overline(n)
+$
+Infatti, grazie al punto fisso, $"Rec" thin overline(n) thin f thin v scripts(=)_beta overline(n) (lambda m. f("Rec" thin m thin f thin v) thin m) thin v$, per cui, se $n = 0$, il numerale seleziona $v$. Se, invece, $n$ è il successore di $n'$, il numerale applica la funzione al predecessore $overline(n')$, ottenendo $f("Rec" thin overline(n') thin f thin v) thin overline(n')$.
 
 _Punti Fissi e Ricorsione._ Rimane da descrivere soltanto come codificare le funzioni definite per ricorsione, come il fattoriale, e, dunque, ogni funzione calcolabile per la _Tesi di Church-Turing_. A questo scopo, si usano i _combinatori di punto fisso_. Il più noto è il _combinatore $Y$_, dovuto a Curry:
 $
@@ -184,3 +204,159 @@ $
 ossia $Y F$ è un _punto fisso_ di $F$. Infatti, $Y F scripts(->)_beta (lambda x. F(x x))(lambda x. F(x x)) scripts(->)_beta F((lambda x. F(x x))(lambda x. F(x x)))=F(Y F)$. Si osservi la somiglianza con il combinatore $Omega$, in quanto il combinatore $Y$ sfrutta la stessa auto-applicazione $x x$, ma inserisce il calcolo della funzione $F$ ad ogni passo. Grazie ai punti fissi, una definizione ricorsiva della forma $g = F g$, in cui $g$ compare sia a sinistra che a destra, può essere risolta ponendo $g = Y F$. Combinando booleani, numerali e punti fissi, si può dimostrare che il $lambda$-calcolo non tipato è _Turing-completo_, ossia in grado di rappresentare tutte le funzioni calcolabili.
 
 Si noti, però, che la Turing-Completezza ha un prezzo. Infatti un linguaggio in cui si possono scrivere tutte le funzioni calcolabili permette inevitabilmente di scrivere anche programmi che non terminano, come il combinatore $Omega$. Introducendo un _sistema di tipi_, si impongono dei vincoli sui termini ammessi, ad esempio richiedendo che una funzione sia applicata soltanto ad argomenti del tipo corretto, il che vieta l'auto-applicazione $x x$ e, con essa, termini come $Omega$ e $Y$. Questo restringe inevitabilmente la potenza espressiva del $lambda$-calcolo. Ad esempio, il sistema di tipi semplice corrispondente alla logica minimale, che introdurremo nella prossima sezione, garantisce che ogni calcolo termini, ma proprio per questo non può garantire la Turing-Completezza. Per recuperarla, pur mantenendo i tipi, si possono aggiungere esplicitamente operatori di punto fisso al linguaggio, come avviene nel linguaggio #pb[Pcf] (_Programming Computable Functions_) di Plotkin e Scott.
+
+Concludiamo la presentazione del $lambda$-calcolo non tipato con le sue proprietà principali, che valgono, più in generale, per molti _sistemi di riscrittura_, ossia sistemi formali in cui il calcolo è implementato trasformando i termini del linguaggio mediante regole di sostituzione. Per prima cosa, si osservi che la $beta$-riduzione da sola non cattura l'_estensionalità_ delle funzioni, ossia il principio per cui due funzioni che si comportano allo stesso modo su ogni argomento sono semanticamente uguali. Ad esempio, i termini $lambda x. M x$ e $M$, dove $x in.not #pb[Fv];(M)$, si comportano allo stesso modo su ogni argomento $N$, poiché $(lambda x. M x) N scripts(->)_beta M N$, ma, per la precedente definizione della relazione $beta$, nessuno dei due si $beta$-riduce all'altro. Per codificare l'estensionalità, quindi, è necessario affiancare alla $beta$-riduzione alla relazione di _$eta$-riduzione_, ovvero:
+#albero(rule(name: [($eta$)], $lambda x. M x scripts(->)_eta M$, $x in.not #pb[Fv] (M)$))
+e considerare l'unione delle due relazioni, ossia $scripts(->)_(beta eta)$.
+
+#teorema(title: [Teorema di Church-Rosser])[
+  Sia $M$ un $lambda$-termine. Se $M scripts(->>)_beta N_1$ e $M scripts(->>)_beta N_2$, allora esiste un $lambda$-termine $N$ tale che $N_1 scripts(->>)_beta N$ e $N_2 scripts(->>)_beta N$. Il teorema vale anche sostituendo la relazione $scripts(->>)_beta$ con la relazione $scripts(->>)_(beta eta)$.
+
+  #align(center, cetz.canvas(length: 1cm, {
+    import cetz.draw: *
+    set-style(stroke: line-thickness + black)
+    // vertici del diamante
+    content((0, 2), $M$)
+    content((-2, 0), $N_1$)
+    content((2, 0), $N_2$)
+    content((0, -2), $N$)
+    // freccia a doppia punta (->>): la seconda punta è arretrata di `d` lungo la freccia
+    let freccia(a, b, d: 0.25, ..stile) = {
+      let (x1, y1) = a
+      let (x2, y2) = b
+      let l = calc.sqrt(calc.pow(x2 - x1, 2) + calc.pow(y2 - y1, 2))
+      let b2 = (x2 - d * (x2 - x1) / l, y2 - d * (y2 - y1) / l)
+      let punta = (end: "straight", scale: 0.8,
+        stroke: (thickness: line-thickness, paint: black, dash: "solid"))
+      line(a, b, mark: punta, ..stile)
+      line(a, b2, mark: punta, ..stile)
+    }
+    // frecce: continue le riduzioni date, tratteggiate quelle garantite dal teorema
+    freccia((-0.35, 1.65), (-1.65, 0.35))
+    freccia((0.35, 1.65), (1.65, 0.35))
+    freccia((-1.65, -0.35), (-0.35, -1.65), stroke: (dash: "dashed"))
+    freccia((1.65, -0.35), (0.35, -1.65), stroke: (dash: "dashed"))
+  }))
+]
+
+Il teorema, che enunciamo senza dimostrazione, garantisce che la strategia con cui si riducono i _redex_ non è influente, in quanto due computazioni, che partono dallo stesso termine e prendono percorsi diversi, possono sempre essere ricongiunte. Questa proprietà è detta anche _confluenza_. Da essa ne conseguono alcune proprietà fondamentali:
+- _Unicità della forma normale_: se un termine ammette una forma normale, allora essa è unica. Infatti, se $M$ si riducesse a due forme normali $N_1$ e $N_2$, per il teorema di Church-Rosser esse dovrebbero ridursi ad un termine comune, ma, non contenendo _redex_ per definizione, possono ridursi soltanto a sé stesse. Ne segue che le forme normali $N_1$ e $N_2$ sono necessariamente uguali
+- _Equivalenza delle forme normali_: due forme normali sono $beta$-equivalenti se e solo se sono $alpha$-equivalenti. Dunque, ridurre due $lambda$-termini in forma normale è un modo per decidere l'uguaglianza tra termini che ammettono una forma normale, in quanto la proprietà di $alpha$-equivalenza tra termini in forma normale è una proprietà decidibile in funzione della sola sintassi
+- _Esistenza di $lambda$-termini non $beta$-equivalenti_. Infatti, ad esempio, i termini $"true"$ e $"false"$ sono due forme normali distinte, per cui non sono $beta$-equivalenti. In altre parole, la $beta$-equivalenza non identifica tutti i termini, da cui deduciamo che il $lambda$-calcolo è _consistente_
+
+La seconda proprietà fondamentale riguarda la terminazione di una computazione nel $lambda$-calcolo non tipato. Infatti, si dice che un termine è _debolmente normalizzabile_ se _esiste_ una sequenza di riduzioni in grado di ridurlo in forma normale, mentre è _fortemente normalizzabile_ se _ogni_ sequenza di riduzioni che parte da esso termina in una forma normale. Corrispondentemente, si distinguono due proprietà del calcolo:
+- _Normalizzazione debole_: si verifica quando, nella variante considerata del $lambda$-calcolo, esiste una strategia di riduzione che restituisce la forma normale di un termine, se essa esiste. Nel $lambda$-calcolo non tipato, questa strategia è la riduzione _leftmost_ (o _normal order_) $scripts(->)_(beta eta)$, che riduce sempre il _redex_ più a sinistra
+- _Normalizzazione forte_: si verifica quando, nella variante considerata del $lambda$-calcolo, tutte le strategie di riduzione restituiscono una forma normale per ogni termine, ovvero non esiste alcuna computazione divergente. Questa proprietà _non_ può valere per il $lambda$-calcolo non tipato, siccome, ad esempio, il termine $Omega$ non ammette alcuna forma normale
+
+Come vedremo nella sezione seguente, l'introduzione dei tipi permetterà di recuperare la normalizzazione fortem nel $lambda$-calcolo semplicemente tipato, al prezzo di rinunciare alla Turing-Completezza del linguaggio di calcolo.
+
+== Il $lambda$-Calcolo Semplicemente Tipato
+
+Nel $lambda$-calcolo non tipato si trattano generiche funzioni, senza definire il loro dominio di applicazione, e il loro codominio. In un certo senso, possiamo concludere che il dominio e il codominio di ogni funzione sono l'insieme di tutti i $lambda$-termini del linguaggio. Il passo successivo, per giungere alla _corrispondenza di Curry-Howard_, è l'introduzione di un _sistema di tipi_ nel $lambda$-calcolo, ottenendo una nozione di dominio e codominio per le funzioni. Questo passaggio è fondamentale per poter dimostrare la _corrispondenza di Curry-Howard_ poiché, volendo dimostrare che ad una prova è associato un programma, dobbiamo essere in grado di assumere che ogni $lambda$-termine sia caratterizzato da un tipo, per cui è necessaria la _normalizzazione forte_. Si noti la differenza tra tipi e insiemi, in quanto i tipi sono oggetti _sintattici_, ovvero possiamo discutere dei tipi senza dover considerare i loro elementi semantici. Assumiamo di aver definito un insieme di _tipi di base_ arbitrario, che indichiamo con la lettera greca $iota$ (_iota_). Ad esempio, possiamo semplicemente definire $iota subset.eq {"Bool", "Nat"}$.
+
+#definizione(title: [Tipi semplici])[
+  L'insieme dei _tipi semplici_ è definito dalla seguente grammatica:
+  $
+    A, B ::= iota | A -> B | A times B | 1
+  $
+]
+
+Il tipo $iota$ è un tipo nell'insieme dei _tipi di base_. Il tipo $A -> B$ è il tipo delle funzioni da $A$ a $B$, il tipo $A times B$ è il tipo delle coppie, il cui primo elemento ha tipo $A$ e il secondo ha tipo $B$, e infine $1$ è il tipo _unit_, ossia un tipo che contiene un unico elemento $*$. Si osservi che questa grammatica corrisponde, a tutti gli effetti, alla sintassi delle formule in _logica minimale_, dove l'implicazione $->$ è rappresentata da una funzione, e la congiunzione $and$ è rappresentata dal prodotto cartesiano $times$. Per convenzione, l'operatore $times$ ha priorità su $->$, e l'operatore $->$ associa a destra, per cui $A times B -> C$ indica $(A times B) -> C$, e $A -> B -> C$ indica $A -> (B -> C)$.
+
+#definizione(title: [Termini tipati grezzi])[
+  L'insieme dei _termini tipati grezzi_, anche detto _raw typed lambda terms_, è definito dalla seguente grammatica:
+  $
+    M, N ::= x | M N | lambda x^A. M | ⟨M, N⟩ | pi_1 M | pi_2 M | *
+  $
+]
+
+I primi tre costrutti sono i termini del $lambda$-calcolo non tipato, e corrispondono al connettivo $->$ e all'operatore di funzione $->$. L'unica differenza è che, nell'astrazione $lambda x^A. M$, la variabile $x$ è annotata con il suo tipo $A$. Gli ultimi costrutti corrispondono, invece, al connettivo $and$, dove $⟨M, N⟩$ è la coppia formata da $M$ ed $N$, mentre $pi_i$ è la _proiezione_ di una coppia $⟨M_1, M_2⟩$ sulla sua $i$-esima componente $M_i$. Infine, $*$ è il _termine iniziale_ associato al tipo unit $1$, ossia il suo unico elemento. I termini si dicono _grezzi_ poiché la grammatica non garantisce che essi siano correttamente tipati. Ad esempio, $pi_1 (lambda x. M)$ è un termine grezzo valido per la grammatica fornita, ma proiettare una funzione non ha alcun senso e, dunque, il termine non è tipato correttamente. I termini corretti, anche detti _ben tipati_, saranno selezionati dalle regole di tipaggio. Il collegamento tra la logica minimale e il linguaggio di programmazione $lambda$-calcolo, in versione semplicemente tipata, che sta emergendo, può essere riassunto nella seguente tabella.
+
+#align(center, table(columns: 2, stroke: none, align: left, inset: (x: 1.2em, y: 4pt),
+  [*Logica*], [*Linguaggi*],
+  table.hline(stroke: 0.4pt),
+  [proposizioni], [tipi],
+  [proposizione $P -> Q$], [tipo $P -> Q$],
+  [proposizione $P and Q$], [tipo $P times Q$],
+  [dimostrazione della proposizione $P$], [termine $t$ di tipo $P$],
+  [la proposizione $P$ è dimostrabile], [il tipo $P$ è _abitato_ da un qualche termine],
+))
+
+L'ultima riga è particolarmente significativa, siccome un tipo $P$ è abitato da almeno un elemento se esiste un termine $t$ di tipo $P$, che corrisponde, in quest'ottica, ad un programma e, quindi, per la _corrispondenza di Curry-Howard_, ad una prova della proposizione $P$. Definiamo, dunque, le regole di tipaggio che permettono di determinare i $lambda$-termini tipati correttamente.
+
+#definizione(title: [Giudizio di tipo])[
+  Un _contesto_ è un insieme $Gamma = {x_1 : A_1, dots, x_n : A_n}$ di assunzioni sui tipi delle variabili, in cui ogni variabile compare al più una volta. Un _giudizio di tipo_, anche detto _typing judgement_, è un'espressione della forma
+  $
+    Gamma tack M : A
+  $
+  che significa che $M$ è un termine di tipo $A$ nel contesto $Gamma$.
+]
+
+Nella _corrispondenza di Curry-Howard_, il contesto $Gamma$ svolge il ruolo dell'insieme di ipotesi in deduzione naturale. I giudizi di tipo derivabili sono definiti dalle seguenti _regole di tipaggio_, insieme alle quali indichiamo anche la corrispondente regola di deduzione naturale.
+#alberi(
+  rule(name: [(var)], $Gamma, x : A tack x : A$),
+  rule(name: [(abs)], $Gamma tack lambda x^A. M : A -> B$, $Gamma, x : A tack M : B$),
+)
+#alberi(
+  rule(name: [(app)], $Gamma tack M N : B$, $Gamma tack M : A -> B$, $Gamma tack N : A$),
+  rule(name: [(pair)], $Gamma tack ⟨M, N⟩ : A times B$, $Gamma tack M : A$, $Gamma tack N : B$),
+)
+#alberi(
+  rule(name: [($pi_1$)], $Gamma tack pi_1 M : A$, $Gamma tack M : A times B$),
+  rule(name: [($pi_2$)], $Gamma tack pi_2 M : B$, $Gamma tack M : A times B$),
+  rule(name: [($*$)], $Gamma tack * : 1$),
+)
+La regola (var) afferma che una variabile ha esattamente il tipo che le assegna il contesto, e corrisponde all'utilizzo di un'ipotesi. La regola (app) corrisponde alla regola $-> E$, ossia al _modus ponens_. Infatti, se $M$ è una funzione da $A$ a $B$ ed $N$ ha tipo $A$, allora $M N$ ha tipo $B$. La regola (abs) corrisponde alla regola $-> I$. Infatti, se, assumendo che $x$ abbia tipo $A$, il termine $M$ ha tipo $B$, allora $lambda x^A. M$ è una funzione da $A$ a $B$. Si osservi che nella conclusione l'assunzione $x : A$ _esce dal contesto_, esattamente come nell regola $-> I$ l'ipotesi $A$ viene scaricata dall'insieme di ipotesi della derivazione. Infine, la regola (pair) corrisponde alla regola $and I$, le regole ($pi_1$) e ($pi_2$) corrispondono ad $and E_1$ e $and E_2$, mentre la regola ($*$) afferma che il tipo $1$ è sempre abitato dall'elemeto $*$.
+
+Un'importante proprietà di queste regole è che esiste _esattamente una regola per ogni costrutto_ dei termini. Dunque, quando si costruisce una derivazione di tipo dal basso verso l'alto, ovvero con strategia _bottom-up_, la scelta della regola da applicare è sempre univoca, e l'unica scelta che deve essere presa concretamente riguarda i tipi da assegnare alle variabili. Per _assegnare un tipo_ ad un termine, si intende assegnare dei tipi alle sue variabili, libere e legate, in modo che il giudizio di tipo corrispondente sia derivabile mediante le regole di tipaggio. Un termine si dice _tipabile_, o _ben tipato_ nel linguaggio in considerazione, se gli si può assegnare un tipo.
+
+#esempio[
+  Mostriamo che $tack lambda x^(A -> A). lambda y^A. x(x y) : (A -> A) -> A -> A$. Per brevità, poniamo $Gamma = x : A -> A, y : A$.
+  #albero(rule(name: [(abs)], $tack lambda x^(A -> A). lambda y^A. x(x y) : (A -> A) -> A -> A$,
+    rule(name: [(abs)], $x : A -> A tack lambda y^A. x(x y) : A -> A$,
+      rule(name: [(app)], $Gamma tack x(x y) : A$,
+        rule(name: [(var)], $Gamma tack x : A -> A$),
+        rule(name: [(app)], $Gamma tack x y : A$, rule(name: [(var)], $Gamma tack x : A -> A$), rule(name: [(var)], $Gamma tack y : A$))))))
+  Le due applicazioni di (abs) fanno uscire dal contesto, nell'ordine, le assunzioni $y : A$ e $x : A -> A$, fino ad ottenere un giudizio con contesto vuoto. Si noti che, cancellando i termini e lasciando soltanto i tipi, si ottiene esattamente la derivazione in deduzione naturale di $(A -> A) -> A -> A$. A partire da questo punto, quindi, possiamo incominciare ad osservare la validità della _corrispondenza di Curry-Howard_.
+]
+
+#nota[
+  Nel $lambda$-calcolo semplicemente tipato non è possibile codificare il costrutto _if-then-else_ con i booleani di Church, esattamente come nel caso del $lambda$-calcolo non tipato. Dunque, un tale costrutto deve essere aggiunto esplicitamente al linguaggio, con la regola di tipaggio associata.
+  #albero(rule($Gamma tack "if" M "then" N "else" L : A$, $Gamma tack M : "Bool"$, $Gamma tack N : A$, $Gamma tack L : A$))
+]
+
+Consideriamo, inoltre, il termine $Omega = omega omega = (lambda x. x x)(lambda x. x x)$. Abbiamo anticipato che, nel $lambda$-calcolo semplicemente tipato, è garantita la normalizzazione forte. Di conseguenza, ogni $lambda$-termine ammette una $beta$-riduzione ad un termine in forma normale, per cui la computazione non può mai divergere. Ne concludiamo che il termine $Omega$ non possa essere _ben tipato_, poiché, altrimenti, esso ammetterebbe un tipo e potremmo costruire una derivazione terminante per esso. Infatti, nel termine $x x$ la variabile $x$ dovrebbe avere contemporaneamente un tipo funzionale $A -> B$, poiché è applicata ad un argomento, e il tipo $A$ del suo stesso argomento. In altre parole, $omega$ non può essere tipato sia come funzione che come valore. Dunque, sebbene $Omega$ sia un termine valido del $lambda$-calcolo non tipato, il $lambda$-calcolo semplicemente tipato non può esprimere né il termine $Omega$, né altri termini semanticamente equivalenti, con rispetto della relazione di equivalenza $beta$ o $beta eta$. La divergenza, tuttavia, può essere codificata mediante specifiche estensioni del $lambda$-calcolo tipato, ad esempio la variante #pb[Pcf], che aggiunge al linguaggio un operatore di punto fisso. Un altro esempio di estensione tipata è il _sistema $T$ di Gödel_, che aggiunge al $lambda$-calcolo semplicemente tipato i numeri naturali e un operatore di ricorsione primitiva, mantenendo la terminazione di tutti i calcoli.
+
+Analogamente, ci si può chiedere se esista una dimostrazione decorata della _Legge di Peirce_, ossia un termine di tipo $((sigma -> tau) -> sigma) -> sigma$. Anche in questo caso, la risposta è _no_. Infatti, provando a costruire la derivazione dal basso verso l'alto, si arriva al seguente punto:
+#albero(rule(name: [(abs)], $tack lambda x. (x(lambda y. M)) : ((sigma -> tau) -> sigma) -> sigma$,
+  rule(name: [(app)], $x : (sigma -> tau) -> sigma tack x(lambda y. M) : sigma$,
+    rule(name: [(var)], $x : (sigma -> tau) -> sigma tack x : (sigma -> tau) -> sigma$),
+    rule(name: [(abs)], $x : (sigma -> tau) -> sigma tack lambda y. M : sigma -> tau$,
+      rule(name: [?], $x : (sigma -> tau) -> sigma, y : sigma tack M : tau$, $arrow.zigzag$)))))
+ma non esiste alcun termine $M$ di tipo $tau$ costruibile a partire da $x$ e $y$. Il tipo $((sigma -> tau) -> sigma) -> sigma$ è, quindi, _inabitato_. Questo è coerente con quanto visto nel capitolo precedente, siccome la _Legge di Peirce_ è un principio classico, non dimostrabile in logica minimale, e dunque non può essere esprimibile consistentemente nel $lambda$-calcolo semplicemente tipato.
+
+#esercizio(numbered: false)[
+  Si fornisca una derivazione di tipo per ciascuno dei seguenti giudizi di tipo:
+  - $tack lambda x^((A -> A) -> B). x(lambda y^A. y) : ((A -> A) -> B) -> B$
+  - $tack lambda x^(A times B). ⟨pi_2 x, pi_1 x⟩ : (A times B) -> (B times A)$
+  Si stabilisca, inoltre, se è possibile assegnare un tipo ai termini $pi_1 (lambda x. M)$ e $⟨M, N⟩(P)$.
+]
+
+Le regole di riduzione del $lambda$-calcolo semplicemente tipato, inoltre, estendono le relazioni di $beta$-riduzione e $eta$-riduzione ai nuovi costrutti:
+$
+  (beta_->) & quad (lambda x^A. M) N & -> & quad M[N slash x] \
+  (eta_->) & quad lambda x^A. M x & -> & quad M, quad "se" x in.not #pb[Fv];(M) \
+  (beta_(times, 1)) & quad pi_1 ⟨M, N⟩ & -> & quad M \
+  (beta_(times, 2)) & quad pi_2 ⟨M, N⟩ & -> & quad N \
+  (eta_times) & quad ⟨pi_1 M, pi_2 M⟩ & -> & quad M \
+  (eta_1) & quad M & -> & quad *, quad "se" M : 1
+$
+Le regole $beta$ descrivono la computazione, che consiste nell'applicare una funzione ad un argomento, oppure nel proiettare una coppia sulle sue componenti. Le regole $eta$ esprimono, invece, l'estensionalità, in quanto una funzione che si limita ad applicare $M$ al proprio argomento è $M$ stessa, una coppia formata dalle due proiezioni di $M$ è $M$ stessa, e ogni termine di tipo $1$ è uguale all'unico elemento $*$. Come nel caso non tipato, inoltre, si definiscono la chiusura riflessiva e transitiva $scripts(->)^*$, e l'equivalenza $=$, indotte da queste regole di riduzione.
+
+#esempio(title: [Un linguaggio per i circuiti booleani], numbered: false)[
+  Un linguaggio per la descrizione di circuiti booleani classici può essere ottenuto come istanza del $lambda$-calcolo semplicemente tipato. Infatti, scegliamo i tipi di base $iota ::= "Bool" | "Nat" | "bit"$, ed estendiamo i $lambda$-termini, definiti in precedenza, con le seguenti costanti
+  $
+    M, N ::= dots | overline(0) | overline(1) | "tt" | "ff" | "NOT" | "AND" | "OR" | "CNOT"
+  $
+  dove $overline(0), overline(1) : "bit"$, $"tt", "ff" : "Bool"$, $"NOT" : "bit" -> "bit"$, e $"AND", "OR" : "bit" times "bit" -> "bit"$, mentre $"CNOT" : "bit" times "bit" -> "bit" times "bit"$. Un circuito è semplicemente, quindi, un termine ben tipato costruito a partire dall'applicazione di queste porte logiche classiche a variabili del $lambda$-calcolo di tipo $"bit"$.
+]
