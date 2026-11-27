@@ -9,8 +9,8 @@
   classi-complessita: false,
 )
 
-#include "capitoli/introduzione.typ"
-#include "capitoli/logica-proposizionale.typ"
-#include "capitoli/logica-dei-predicati.typ"
-#include "capitoli/logica-intuizionistica.typ"
+// #include "capitoli/introduzione.typ"
+// #include "capitoli/logica-proposizionale.typ"
+// #include "capitoli/logica-dei-predicati.typ"
+// #include "capitoli/logica-intuizionistica.typ"
 #include "capitoli/lambda-calcolo.typ"
